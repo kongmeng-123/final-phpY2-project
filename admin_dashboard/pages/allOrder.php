@@ -53,7 +53,7 @@
                 <div class="collapse" id="collapseOrder">
                     <div class="py-2 bg-white collapse-inner rounded">
                         <h6 class="collapse-header">Order detail :</h6>
-                        <a class="collapse-item active" href="..allOrder.php">All</a>
+                        <a class="collapse-item active" href="allOrder.php">All</a>
                         <a class="collapse-item" href="newOrder.php">New order</a>
                         <a class="collapse-item" href="checkOrder.php">Check order</a>
                     </div>
@@ -157,131 +157,26 @@
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="alertsDropdown" role="button">
                                 <i class="fas fa-fw fa-bell"></i>
-                                <span class="badge badge-counter badge-danger">3+</span>
+                                <span class="badge badge-counter badge-danger">0</span>
                             </a>
-                            <div class="shadow animated--grow-in dropdown-menu dropdown-menu-right dropdown-list"
-                                aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">Alerts Center</h6>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas text-white fa-file-alt"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 12, 2019</div>
-                                        <span class="font-weight-bold">A new monthly report is ready to download!</span>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3">
-                                        <div class="bg-success icon-circle">
-                                            <i class="fas text-white fa-donate"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 7, 2019</div>
-                                        $290.29 has been deposited into your account!
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-warning">
-                                            <i class="fas text-white fa-exclamation-triangle"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 2, 2019</div>
-                                        Spending Alert: We've noticed unusually high spending for your account.
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item small text-center text-gray-500">Show All Alerts</a>
-                            </div>
+                            
                         </li>
                         <li class="nav-item dropdown no-arrow mx-1">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="messagesDropdown" role="button">
                                 <i class="fas fa-fw fa-envelope"></i>
-                                <span class="badge badge-counter badge-danger">7</span>
+                                <span class="badge badge-counter badge-danger">0</span>
                             </a>
-                            <div class="shadow animated--grow-in dropdown-menu dropdown-menu-right dropdown-list"
-                                aria-labelledby="messagesDropdown">
-                                <h6 class="dropdown-header">Message Center</h6>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="img/undraw_profile_1.svg" alt="..." />
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div class="font-weight-bold">
-                                        <div class="text-truncate">Hi there! I am wondering if you can help me with a
-                                            problem I've been having.</div>
-                                        <div class="small text-gray-500">Emily Fowler · 58m</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="img/undraw_profile_2.svg" alt="..." />
-                                        <div class="status-indicator"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">I have the photos that you ordered last month, how
-                                            would you like them sent to you?</div>
-                                        <div class="small text-gray-500">Jae Chun · 1d</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="img/undraw_profile_3.svg" alt="..." />
-                                        <div class="status-indicator bg-warning"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">Last month's report looks great, I am very happy with
-                                            the progress so far, keep up the good work!</div>
-                                        <div class="small text-gray-500">Morgan Alvarez · 2d</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="http://ssource.unsplash.com/Mv9hjnEUHR4/60x60"
-                                            alt="..." />
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">Am I a good boy? The reason I ask is because someone
-                                            told me that people say this to all dogs, even if they aren't good...</div>
-                                        <div class="small text-gray-500">Chicken the Dog · 2w</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item small text-center text-gray-500">Read More Messages</a>
-                            </div>
+                            
                         </li>
                         <div class="d-none d-sm-block topbar-divider"></div>
                         <li class="nav-item dropdown no-arrow">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="userDropdown" role="button">
                                 <span class="small d-lg-inline d-none mr-2 text-gray-600">Douglas McGee</span>
-                                <img class="rounded-circle img-profile" src="img/undraw_profile.svg" />
+                                <img class="rounded-circle img-profile" src="https://cdn-icons-png.flaticon.com/512/9703/9703596.png" />
                             </a>
-                            <div class="shadow animated--grow-in dropdown-menu dropdown-menu-right"
-                                aria-labelledby="userDropdown">
-                                <a href="#" class="dropdown-item">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-user"></i>
-                                    Profile
-                                </a>
-                                <a href="#" class="dropdown-item">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-cogs"></i>
-                                    Settings
-                                </a>
-                                <a href="#" class="dropdown-item">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-list"></i>
-                                    Activity Log
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a href="#" class="dropdown-item" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-sign-out-alt"></i>
-                                    Logout
-                                </a>
-                            </div>
+                            
                         </li>
                     </ul>
                 </nav>
@@ -289,146 +184,34 @@
                     <h1 class="h3 mb-2 text-gray-800">All Order</h1>
 
                     <div class="shadow mb-4 card">
+                        <div class="card-header py-3">
+                            <button class="btn bg-primary text-white">Pay success</button>
+                            <button class="btn bg-primary text-white">Pay fail</button>
+                            <button class="btn bg-primary text-white">Still check</button>
+                        </div>
 
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table cellspacing="0" class="table table-bordered" id="dataTable" width="100%">
+                                <div class="row justify-content-end p-3" >
+                                        <input type="search" id="search_data" placeholder="Search" style="border:2px solid gray;padding: 4px;border-radius:8px; width: 230px;">
+                                </div>
+                                <table cellspacing="0" class="table table-bordered" width="100%">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
-                                            <th>Product Name</th>
                                             <th>Product Image</th>
                                             <th>Total Price</th>
                                             <th>Count</th>
                                             <th>User Name</th>
                                             <th>Bill</th>
+                                        
                                         </tr>
                                     </thead>
 
-                                    <tbody>
-                                        <tr>
-                                            <td><a href="orderDetail.php" title="order detail">0001</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="../img/how to focus.jpg" alt="product image" height="60"
-                                                        width="50">
-
-                                                </div>
-                                            </td>
-                                            <td>$ 30</td>
-                                            <td>2</td>
-                                            <td>kongmeng</td>
-                                            <td>
-                                                <a href="checkBill.php" title="check bill">
-                                                    <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
-                                                        alt="bill" height="60" width="50">
-
-                                                </a>
-                                                <i class="fa-regular fa-circle-check text-warning"></i>
-                                                <i class="fa-solid fa-ban"></i>
-                                                <i class="fa-regular fa-circle-pause"></i>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="orderDetail.php" title="order detail">0001</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="../img/how to focus.jpg" alt="product image" height="60"
-                                                        width="50">
-
-                                                </div>
-                                            </td>
-                                            <td>$ 30</td>
-                                            <td>2</td>
-                                            <td>kongmeng</td>
-                                            <td>
-                                                <a href="#" title="check bill">
-                                                    <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
-                                                        alt="bill" height="60" width="50">
-
-                                                </a>
-                                                <i class="fa-regular fa-circle-check text-warning"></i>
-                                                <i class="fa-solid fa-ban"></i>
-                                                <i class="fa-regular fa-circle-pause"></i>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="orderDetail.php" title="order detail">0001</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="../img/how to focus.jpg" alt="product image" height="60"
-                                                        width="50">
-
-                                                </div>
-                                            </td>
-                                            <td>$ 30</td>
-                                            <td>2</td>
-                                            <td>kongmeng</td>
-                                            <td>
-                                                <a href="#" title="check bill">
-                                                    <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
-                                                        alt="bill" height="60" width="50">
-
-                                                </a>
-                                                <i class="fa-regular fa-circle-check text-warning"></i>
-                                                <i class="fa-solid fa-ban"></i>
-                                                <i class="fa-regular fa-circle-pause"></i>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="orderDetail.php" title="order detail">0001</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="../img/how to focus.jpg" alt="product image" height="60"
-                                                        width="50">
-
-                                                </div>
-                                            </td>
-                                            <td>$ 30</td>
-                                            <td>2</td>
-                                            <td>kongmeng</td>
-                                            <td>
-                                                <a href="#" title="check bill">
-                                                    <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
-                                                        alt="bill" height="60" width="50">
-
-                                                </a>
-                                                <i class="fa-regular fa-circle-check text-warning"></i>
-                                                <i class="fa-solid fa-ban"></i>
-                                                <i class="fa-regular fa-circle-pause"></i>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="orderDetail.php" title="order detail">0001</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="../img/how to focus.jpg" alt="product image" height="60"
-                                                        width="50">
-
-                                                </div>
-                                            </td>
-                                            <td>$ 30</td>
-                                            <td>2</td>
-                                            <td>kongmeng</td>
-                                            <td>
-                                                <a href="#" title="check bill">
-                                                    <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
-                                                        alt="bill" height="60" width="50">
-
-                                                </a>
-                                                <i class="fa-regular fa-circle-check text-warning"></i>
-                                                <i class="fa-solid fa-ban"></i>
-                                                <i class="fa-regular fa-circle-pause"></i>
-                                            </td>
-                                        </tr>
-
+                                    <tbody id="tableBody">
 
                                     </tbody>
+
                                 </table>
                             </div>
                         </div>
@@ -472,6 +255,91 @@
     <script src="../vendor/datatables/jquery.dataTables.min.js"></script>
     <script src="../vendor/datatables/dataTables.bootstrap4.min.js"></script>
     <script src="../js/demo/datatables-demo.js"></script>
+
+    <script>
+        
+        let allOrder = []; // เก็บข้อมูลทั้งหมดไว้ที่นี่
+
+        async function loadProduct() {
+            try {
+                const response = await fetch('http://localhost:9090/api/api.php/orders');
+                if (!response.ok) throw new Error("network response was not ok");
+
+                allOrder = await response.json(); // เก็บข้อมูลใส่ตัวแปร Global
+                console.log(allOrder[0].order_items)
+                renderTable(allOrder); // แสดงผลครั้งแรก
+            } catch (error) {
+                console.error("something wrong, " + error);
+            }
+        }
+        
+
+        // ฟังก์ชันสำหรับวาดตารางใหม่ (ตัวเดียวจบ)
+        function renderTable(dataToDisplay) {
+            let tb_body = document.getElementById("tableBody");
+            tb_body.innerHTML = ""; // ล้างตารางก่อนเสมอ
+
+            dataToDisplay.forEach(item => {
+                let tableRow = document.createElement("tr");
+                tableRow.innerHTML = `
+            
+                                    <td><a href="orderDetail.php" title="order detail">${item.order_id}</a></td>
+                                    
+                                    <td>
+                                        <div>
+                                            <img src="../img/how to focus.jpg" alt="product image" height="60"
+                                                width="50">
+
+                                        </div>
+                                    </td>
+                                    <td>${item.order_items[1].price}</td>
+                                    <td>${item.order_items[1].amount}</td>
+                                    <td>kongmeng</td>
+                                    <td>
+                                        <a href="checkBill.php" title="check bill">
+                                            <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
+                                                alt="bill" height="60" width="50">
+
+                                        </a>
+                                        <i class="fa-regular fa-circle-check text-warning"></i>
+                                        <i class="fa-solid fa-ban"></i>
+                                        <i class="fa-regular fa-circle-pause"></i>
+                                    </td>
+                                
+                                        
+                `;
+                tb_body.appendChild(tableRow);
+            });
+        }
+
+        // 1. จัดการการค้นหา (Search)
+        document.getElementById("search_data").addEventListener("input", function() {
+            let filter = this.value.toLowerCase();
+            let filtered = allOrder.filter(item => {
+                let matchesSearch = item.product_name.toLowerCase().includes(filter);
+                let matchesCategory = (categoryNow === "All" || item.category === categoryNow);
+                return matchesSearch && matchesCategory;
+            });
+            renderTable(filtered);
+        });
+
+        // 2. จัดการหมวดหมู่ (Category)
+        function handleCategory(category) {
+            categoryNow = category;
+            // เมื่อเปลี่ยนหมวดหมู่ ให้ทำการกรองข้อมูลใหม่ทันที
+            let filtered = allOrder.filter(item => {
+                if (category === "All") return true;
+                return item.category === category;
+            });
+            renderTable(filtered);
+        }
+
+        loadProduct();
+
+        
+            
+        
+    </script>
 
 </body>
 

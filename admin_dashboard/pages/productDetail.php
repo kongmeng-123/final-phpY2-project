@@ -53,7 +53,7 @@
                 <div class="collapse" id="collapseOrder">
                     <div class="py-2 bg-white collapse-inner rounded">
                         <h6 class="collapse-header">Order detail :</h6>
-                        <a class="collapse-item" href="..allOrder.php">All</a>
+                        <a class="collapse-item" href="allOrder.php">All</a>
                         <a class="collapse-item" href="newOrder.php">New order</a>
                         <a class="collapse-item" href="checkOrder.php">Check order</a>
                     </div>
@@ -157,131 +157,26 @@
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="alertsDropdown" role="button">
                                 <i class="fas fa-fw fa-bell"></i>
-                                <span class="badge badge-counter badge-danger">3+</span>
+                                <span class="badge badge-counter badge-danger">0</span>
                             </a>
-                            <div class="shadow animated--grow-in dropdown-menu dropdown-menu-right dropdown-list"
-                                aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">Alerts Center</h6>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas text-white fa-file-alt"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 12, 2019</div>
-                                        <span class="font-weight-bold">A new monthly report is ready to download!</span>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3">
-                                        <div class="bg-success icon-circle">
-                                            <i class="fas text-white fa-donate"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 7, 2019</div>
-                                        $290.29 has been deposited into your account!
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-warning">
-                                            <i class="fas text-white fa-exclamation-triangle"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 2, 2019</div>
-                                        Spending Alert: We've noticed unusually high spending for your account.
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item small text-center text-gray-500">Show All Alerts</a>
-                            </div>
+                            
                         </li>
                         <li class="nav-item dropdown no-arrow mx-1">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="messagesDropdown" role="button">
                                 <i class="fas fa-fw fa-envelope"></i>
-                                <span class="badge badge-counter badge-danger">7</span>
+                                <span class="badge badge-counter badge-danger">0</span>
                             </a>
-                            <div class="shadow animated--grow-in dropdown-menu dropdown-menu-right dropdown-list"
-                                aria-labelledby="messagesDropdown">
-                                <h6 class="dropdown-header">Message Center</h6>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="img/undraw_profile_1.svg" alt="..." />
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div class="font-weight-bold">
-                                        <div class="text-truncate">Hi there! I am wondering if you can help me with a
-                                            problem I've been having.</div>
-                                        <div class="small text-gray-500">Emily Fowler · 58m</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="img/undraw_profile_2.svg" alt="..." />
-                                        <div class="status-indicator"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">I have the photos that you ordered last month, how
-                                            would you like them sent to you?</div>
-                                        <div class="small text-gray-500">Jae Chun · 1d</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="img/undraw_profile_3.svg" alt="..." />
-                                        <div class="status-indicator bg-warning"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">Last month's report looks great, I am very happy with
-                                            the progress so far, keep up the good work!</div>
-                                        <div class="small text-gray-500">Morgan Alvarez · 2d</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="http://ssource.unsplash.com/Mv9hjnEUHR4/60x60"
-                                            alt="..." />
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">Am I a good boy? The reason I ask is because someone
-                                            told me that people say this to all dogs, even if they aren't good...</div>
-                                        <div class="small text-gray-500">Chicken the Dog · 2w</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item small text-center text-gray-500">Read More Messages</a>
-                            </div>
+                            
                         </li>
                         <div class="d-none d-sm-block topbar-divider"></div>
                         <li class="nav-item dropdown no-arrow">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="userDropdown" role="button">
                                 <span class="small d-lg-inline d-none mr-2 text-gray-600">Douglas McGee</span>
-                                <img class="rounded-circle img-profile" src="img/undraw_profile.svg" />
+                                <img class="rounded-circle img-profile" src="https://cdn-icons-png.flaticon.com/512/9703/9703596.png" />
                             </a>
-                            <div class="shadow animated--grow-in dropdown-menu dropdown-menu-right"
-                                aria-labelledby="userDropdown">
-                                <a href="#" class="dropdown-item">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-user"></i>
-                                    Profile
-                                </a>
-                                <a href="#" class="dropdown-item">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-cogs"></i>
-                                    Settings
-                                </a>
-                                <a href="#" class="dropdown-item">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-list"></i>
-                                    Activity Log
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a href="#" class="dropdown-item" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-sign-out-alt"></i>
-                                    Logout
-                                </a>
-                            </div>
+                            
                         </li>
                     </ul>
                 </nav>

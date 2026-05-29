@@ -238,10 +238,11 @@
 
     function handleCheckout() {
         const cart = getCart();
-        if (!cart.length) return;
-        saveCart([]);
-        alert('Checkout complete. Thank you for your order!');
-        renderCart();
+        if (!cart.length) {
+            alert('Your cart is empty.');
+            return;
+        }
+        location.href = 'checkout.php';
     }
 
     document.getElementById('checkout-button').addEventListener('click', handleCheckout);

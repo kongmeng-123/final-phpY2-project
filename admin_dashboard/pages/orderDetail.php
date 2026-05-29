@@ -305,6 +305,25 @@
     <script src="../vendor/datatables/jquery.dataTables.min.js"></script>
     <script src="../vendor/datatables/dataTables.bootstrap4.min.js"></script>
     <script src="../js/demo/datatables-demo.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('order_id');
+        console.log("Order ID from URL:", orderId);
+
+        let AllOrder = []; // เก็บข้อมูลทั้งหมดไว้ที่นี่
+        async function loadOrder() {
+            try {
+                const response = await fetch('http://localhost:9090/api/api.php/orders');
+                if (!response.ok) throw new Error("network response was not ok");
+                AllOrder = await response.json(); // เก็บข้อมูลใส่ตัวแปร Global
+                console.log(AllOrder);
+            } catch (error) {
+                console.error("Fetch error:", error);
+            }
+        }
+        loadOrder();
+        
+    </script>
 
 </body>
 

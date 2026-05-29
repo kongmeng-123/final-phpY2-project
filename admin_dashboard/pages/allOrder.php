@@ -185,9 +185,9 @@
 
                     <div class="shadow mb-4 card">
                         <div class="card-header py-3">
-                            <button class="btn bg-primary text-white">Pay success</button>
-                            <button class="btn bg-primary text-white">Pay fail</button>
-                            <button class="btn bg-primary text-white">Still check</button>
+                            <button class="btn bg-primary text-white">Payment Successful</button>
+                            <button class="btn bg-primary text-white">Payment Failed</button>
+                            <button class="btn bg-primary text-white">Check Status</button>
                         </div>
 
                         <div class="card-body">
@@ -259,13 +259,18 @@
     <script>
         
         let allOrder = []; // เก็บข้อมูลทั้งหมดไว้ที่นี่
+        let users = []
 
         async function loadProduct() {
             try {
                 const response = await fetch('http://localhost:9090/api/api.php/orders');
-                if (!response.ok) throw new Error("network response was not ok");
+                const responseU = await fetch('http://localhost:9090/api/api.php/users');
+
+                if (!response.ok && !responseU.ok) throw new Error("network response was not ok");
 
                 allOrder = await response.json(); // เก็บข้อมูลใส่ตัวแปร Global
+                users = await responseU.json();
+
                 console.log(allOrder[0].order_items)
                 renderTable(allOrder); // แสดงผลครั้งแรก
             } catch (error) {
@@ -280,23 +285,42 @@
             tb_body.innerHTML = ""; // ล้างตารางก่อนเสมอ
 
             dataToDisplay.forEach(item => {
+                let remain = 0
+                let totalPrice = 0
+                let totalCount = 0
+                let userName = users.filter(user => user.user_id === item.user_id)[0]?.Fname || "Unknown User";
+
+                item.order_items.forEach(orderItem => {
+                    totalPrice += parseFloat(orderItem.price) * parseFloat(orderItem.amount)
+                    totalCount += parseFloat(orderItem.amount)
+                })
+
+                if(item.order_items.length > 2){
+                    remain = item.order_items.length - 2
+                }
+                
                 let tableRow = document.createElement("tr");
                 tableRow.innerHTML = `
             
-                                    <td><a href="orderDetail.php" title="order detail">${item.order_id}</a></td>
+                                    <td><a href="orderDetail.php?order_id=${item.order_id}" title="order detail">${item.order_id}</a></td>
                                     
                                     <td>
                                         <div>
-                                            <img src="../img/how to focus.jpg" alt="product image" height="60"
-                                                width="50">
+                                            ${
+                                                item.order_items.slice(0, 2).map(orderItem => `
+                                                    <img src="../img/${orderItem.image_src}" alt="product image" height="60" width="50">
+                                                `).join('')
+                                        
+                                            }
+                                                <span id ="remain">+ ${remain}</span>
 
                                         </div>
                                     </td>
-                                    <td>${item.order_items[1].price}</td>
-                                    <td>${item.order_items[1].amount}</td>
-                                    <td>kongmeng</td>
+                                    <td>${totalPrice.toFixed(2)}</td>
+                                    <td>${totalCount}</td>
+                                    <td>${userName}</td>
                                     <td>
-                                        <a href="checkBill.php" title="check bill">
+                                        <a href="checkBill.php " title="check bill">
                                             <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
                                                 alt="bill" height="60" width="50">
 

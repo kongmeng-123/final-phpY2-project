@@ -31,7 +31,7 @@
                     <i class="fas fa-laugh-wink"></i>
                 </div>
                 <div class="mx-3 sidebar-brand-text">
-                    G-Book
+                    E-book
                     <sup>2</sup>
                 </div>
             </a>

@@ -2,7 +2,7 @@ services:
   # 1. PHP & Apache
   web:
     build: .
-    container_name: php_web
+    container_name: final_php_web
     ports:
       - "9090:80"
     volumes:
@@ -13,7 +13,7 @@ services:
   # 2. MySQL Database
   db:
     image: mysql:8.0
-    container_name: mysql_db
+    container_name: final_mysql_db
     restart: always
     environment:
       MYSQL_DATABASE: final-project
@@ -26,7 +26,7 @@ services:
   # 3. phpMyAdmin (สำหรับจัดการ DB ผ่านเว็บ)
   phpmyadmin:
     image: phpmyadmin
-    container_name: pma
+    container_name: final_php_pma
     restart: always
     ports:
       - "9091:80"

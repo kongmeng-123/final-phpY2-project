@@ -15,7 +15,7 @@
         <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
             <div class="container">
                 <!-- Brand Logo -->
-                <a class="navbar-brand" href="/home">
+                <a class="navbar-brand" href="index.php">
                     <!-- <img src="./images/gemini.jpg" alt="Logo" width="30"
                         height="24" class="d-inline-block align-text-top me-2"> -->
                     E-book
@@ -32,14 +32,14 @@
                 <div class="collapse navbar-collapse" id="navbarMain">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">Home</a>
+                            <a class="nav-link active" aria-current="page" href="index.php">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/product.php">Products</a>
+                            <a class="nav-link" href="Product.php">Products</a>
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" href="/order.php">Order</a>
+                            <a class="nav-link" href="order.php">Order</a>
                         </li>
 
                     </ul>
@@ -50,10 +50,10 @@
                             aria-label="Search">
                         <!-- <button class="btn btn-outline-primary btn-search" type="submit">Search</button> -->
                         <button class="btn btn-outline-primary btn-search " type="submit">
-                            <a href="./signup.php " class="text-decoration-none">SignUp</a>
+                            <a href="signup.php" class="text-decoration-none">SignUp</a>
                         </button>
                         <button class="btn btn-outline-primary btn-search " type="submit">
-                            <a href="./cart.php" class="text-decoration-none">
+                            <a href="Cart.php" class="text-decoration-none">
                                 Cart
                             </a>
                         </button>

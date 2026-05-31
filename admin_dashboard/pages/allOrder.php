@@ -320,14 +320,14 @@
                                     <td>${totalCount}</td>
                                     <td>${userName}</td>
                                     <td>
-                                        <a href="checkBill.php " title="check bill">
+                                        <a href="checkBill.php?order_id=${item.order_id}" title="check bill" style="text-decoration: none;">
                                             <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
                                                 alt="bill" height="60" width="50">
 
                                         </a>
-                                        <i class="fa-regular fa-circle-check text-warning"></i>
-                                        <i class="fa-solid fa-ban"></i>
-                                        <i class="fa-regular fa-circle-pause"></i>
+                                        <i class="fa-regular fa-circle-check ${item.bill_status =='success' ? 'text-success' : ''}"></i>
+                                        <i class="fa-solid fa-ban ${item.bill_status =='fail' ? 'text-danger' : ''}"></i>
+                                        <i class="fa-regular fa-circle-pause ${item.bill_status =='wait' ? 'text-primary' : ''}"></i>
                                     </td>
                                 
                                         

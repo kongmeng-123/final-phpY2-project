@@ -181,16 +181,16 @@
                     </ul>
                 </nav>
                 <div class="container-fluid">
-                    <h1 class="h3 mb-2 text-gray-800">Order detail of 0001</h1>
+                    <h1 class="h3 mb-2 text-gray-800">Order detail</h1>
                     <div>
-                        <p> <b>Order ID:</b> <span>0001</span> </p>
-                        <p> <b>Customer name:</b> <span>Nguyen Van A</span> </p>
-                        <p> <b>Customer phone:</b> <span>0123456789</span> </p>
-                        <p> <b>Express with:</b> <span>Viettel Post</span> </p>
-                        <p> <b>Express address:</b> <span>123 Nguyen Trai Street, Thanh Xuan District, Hanoi</span> </p>
-                        <p> <b>Order date:</b> <span>01/01/2024</span> </p>
-                        <p> <b>Order status:</b> <span>New order</span> </p>
-                        <p> <b>Order total:</b> <span>$100</span> </p>
+                        <p> <b>Order ID:</b> <span id="orderID"></span> </p>
+                        <p> <b>Customer name:</b> <span id="customerName"></span> </p>
+                        <p> <b>Customer phone:</b> <span id="customerPhone"></span> </p>
+                        <p> <b>Express with:</b> <span id="expressService"></span> </p>
+                        <p> <b>Express address:</b> <span id="expressAddress"></span> </p>
+                        <p> <b>Order date:</b> <span id="orderDate"></span> </p>
+                        <p> <b>Order status:</b> <span id="orderStatus"></span> </p>
+                        <p> <b>Order total:</b> <span id="orderTotal"></span> </p>
 
                     </div>
                     <h4>Order Items</h4>
@@ -212,54 +212,8 @@
                                         </tr>
                                     </thead>
 
-                                    <tbody>
-                                        <tr>
-                                            <td><a href="#">01</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="../img/how to focus.jpg" alt="product image" height="60"
-                                                        width="50" />
-
-                                                </div>
-                                            </td>
-                                            <td>2</td>
-                                            <td>$ 15</td>
-                                            <td>$ 30</td>
-
-                                        </tr>
-
-                                        <tr>
-                                            <td><a href="#">01</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="../img/how to focus.jpg" alt="product image" height="60"
-                                                        width="50" />
-
-                                                </div>
-                                            </td>
-                                            <td>2</td>
-                                            <td>$ 15</td>
-                                            <td>$ 30</td>
-
-                                        </tr>
-
-                                        <tr>
-                                            <td><a href="#">01</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="../img/how to focus.jpg" alt="product image" height="60"
-                                                        width="50" />
-
-                                                </div>
-                                            </td>
-                                            <td>2</td>
-                                            <td>$ 15</td>
-                                            <td>$ 30</td>
-
-                                        </tr>
+                                    <tbody id="orderItems">
+                                        
 
                                     </tbody>
                                 </table>
@@ -311,17 +265,79 @@
         console.log("Order ID from URL:", orderId);
 
         let AllOrder = []; // เก็บข้อมูลทั้งหมดไว้ที่นี่
+        let AllUser = []; // เก็บข้อมูลผู้ใช้ทั้งหมดไว้ที่นี่
+        let AllProduct = []; // เก็บข้อมูลสินค้าไว้ที่นี่
         async function loadOrder() {
             try {
                 const response = await fetch('http://localhost:9090/api/api.php/orders');
-                if (!response.ok) throw new Error("network response was not ok");
+                const responseU = await fetch('http://localhost:9090/api/api.php/users');
+                const responseP = await fetch('http://localhost:9090/api/api.php/products');
+                if (!response.ok && !responseU.ok && !responseP.ok) throw new Error("network response was not ok");
                 AllOrder = await response.json(); // เก็บข้อมูลใส่ตัวแปร Global
-                console.log(AllOrder);
+                AllUser = await responseU.json(); // เก็บข้อมูลผู้ใช้ใส่ตัวแปร Global
+                AllProduct = await responseP.json(); // เก็บข้อมูลสินค้าใส่ตัวแปร Global
+
+                rederPage(AllOrder);
             } catch (error) {
                 console.error("Fetch error:", error);
             }
         }
+
         loadOrder();
+        
+        function rederPage(data){
+            let userName = "";
+            let userPhone = "";
+            let totalPrice = 0;
+            AllUser.map(user => {
+                console.log("Checking user:", user.user_id, "against order user_id:", data[0].user_id);
+                if (user.user_id == data[0].user_id) {
+                    userName = user.Fname;
+                    userPhone = user.phoneNumber;
+                    console.log("User found:", user);
+                }
+            });
+
+           
+            
+            data.filter(order => order.order_id == orderId)
+                .map(order => {
+                    order.order_items.map(item => {
+                        totalPrice += item.amount * item.price;
+                    })
+                    console.log("Order found:", order);
+                    document.getElementById('orderID').textContent = `${order.order_id}`;
+                    document.getElementById('customerName').textContent = `${userName}`;
+                    document.getElementById('customerPhone').textContent = `${userPhone}`;
+                    document.getElementById('expressService').textContent = `${order.express_with}`;
+                    document.getElementById('expressAddress').textContent = `${order.express_address}`;
+                    document.getElementById('orderDate').textContent = `${order.date_order}`;
+                    document.getElementById('orderStatus').textContent = `${order.status}`;
+                    document.getElementById('orderTotal').textContent = `${totalPrice}$`;
+
+                    order.order_items.map(item =>{
+                            let tableRow = document.createElement('tr');
+                            tableRow.innerHTML = `
+                                <td><a href="#">${item.id}</a></td>
+                                <td>${item.product_name}</td>
+                                <td>
+                                    <div>
+                                        <img src="../img/${item.image_src}" alt="product image" height="60" width="50" />
+                                    </div>
+                                </td>
+                                <td>${item.amount}</td>
+                                <td>$ ${item.price}</td>
+                                <td>$ ${item.amount * item.price}</td>
+                            `;
+                            document.getElementById('orderItems').appendChild(tableRow);
+                    })
+                   
+                });
+            console.log("Rendering page with data:", data);
+
+            
+            
+        }
         
     </script>
 

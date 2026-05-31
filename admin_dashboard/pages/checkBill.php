@@ -25,6 +25,31 @@
         integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
+<style>
+    #btn_success, #btn_fail, #btn_wait {
+        color: rgb(131, 131, 131);
+    }
+    
+    #btn_success:hover {
+        color: rgb(3, 217, 3);
+ 
+    }
+    #btnc_success:active {
+        color: rgb(3, 217, 3);
+    }
+
+    #btn_fail:hover {
+        color: rgb(255, 0, 0);
+        
+        
+    }
+
+    #btn_wait:hover {
+        color: rgb(0, 0, 255);
+        
+        
+    }
+</style>
 
 <body id="page-top">
     <div id="wrapper">
@@ -297,17 +322,11 @@
                         </div>
                         <div style="font-size: 30px;" class="col align-items-center">
                             <div class="row justify-content-center">
-                                <a href="#" style="text-decoration: none;">
-                                    <i class="fa-regular fa-circle-check text-success"></i>
-                                </a>
-                                <a href="#" style="text-decoration: none;">
-                                    <i class="fa-solid fa-ban text-danger"></i>
-
-                                </a>
-                                <a href="#" style="text-decoration: none;">
-                                    <i class="fa-regular fa-circle-pause text-primary hover:bg-danger"></i>
-
-                                </a>
+                                
+                                <i class="fa-regular fa-circle-check " id="btn_success" title="success" onclick="chooseStatus('success')"></i>
+                                <i class="fa-solid fa-ban " id="btn_fail" title="fail" onclick="chooseStatus('fail')"></i>
+                                <i class="fa-regular fa-circle-pause" id="btn_wait" title="wait" onclick="chooseStatus('wait')"></i>
+                                
                             </div>
                             <div>
                                 <a href="allOrder.php">
@@ -356,6 +375,78 @@
         <script src="../vendor/datatables/jquery.dataTables.min.js"></script>
         <script src="../vendor/datatables/dataTables.bootstrap4.min.js"></script>
         <script src="../js/demo/datatables-demo.js"></script>
+        <script>
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('order_id');
+            console.log("Order ID from URL:", orderId);
+
+            let allOrder = []; // เก็บข้อมูลทั้งหมดไว้ที่นี่
+
+            async function loadProduct() {
+                try {
+                    const response = await fetch('http://localhost:9090/api/api.php/orders');
+
+                    if (!response.ok) throw new Error("network response was not ok");
+
+                    allOrder = await response.json(); // เก็บข้อมูลใส่ตัวแปร Global
+                    console.log("All Orders:", allOrder); // ตรวจสอบข้อมูลที่ได้รับ
+                    randerStatus(allOrder); 
+
+                } catch (error) {
+                    console.error("something wrong, " + error);
+                }
+            }
+            loadProduct();
+
+
+                 
+            let btn_success = document.getElementById("btn_success");
+            let btn_fail = document.getElementById("btn_fail");     
+            let btn_wait = document.getElementById("btn_wait");
+            let bill_status = "";
+
+            function randerStatus(data) {
+                data.map(item => {
+                    if(item.order_id == orderId) {
+                        if(item.bill_status === "success") {
+                            chooseStatus("success");
+                            bill_status = "success";
+                        } else if (item.bill_status === "fail") {
+                            chooseStatus("fail");
+                            bill_status = "fail";
+                        } else if (item.bill_status === "wait") {
+                            chooseStatus("wait");
+                            bill_status = "wait";
+                        }
+                    }
+                })
+            }
+
+            function chooseStatus(status) {
+                if(status === "success") {
+                    btn_success.style.color = "rgb(3, 217, 3)";
+                    btn_fail.style.color = "rgb(131, 131, 131)";
+                    btn_wait.style.color = "rgb(131, 131, 131)";
+                    console.log("success");
+                } else if (status === "fail") {
+                    console.log("fail");
+                    btn_fail.style.color = "rgb(255, 0, 0)";
+                    btn_success.style.color = "rgb(131, 131, 131)";
+                    btn_wait.style.color = "rgb(131, 131, 131)";
+                } else if (status === "wait") {
+                    console.log("wait");
+                    btn_wait.style.color = "rgb(0, 0, 255)";
+                    btn_success.style.color = "rgb(131, 131, 131)";
+                    btn_fail.style.color = "rgb(131, 131, 131)";
+                }
+                
+            }
+
+                
+
+                
+
+        </script>
 
 </body>
 

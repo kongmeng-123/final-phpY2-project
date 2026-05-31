@@ -1,14 +1,21 @@
 <?php
+/**
+ * Professional REST API Gateway
+ * Final PHP Year 2 Project
+ */
+
 require_once "db_config.php";
-header("Content-Type: Application/json charset=UTF-8");
+
+// Set core API response headers
+header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
 
-try {
-   $path = isset($_SERVER['PATH_INFO']) ? trim($_SERVER['PATH_INFO'], '/') : '';
-   $method = $_SERVER['REQUEST_METHOD'];
-   switch ($path) {
+ try{
+    $path = isset($_SERVER['PATH_INFO']) ? trim($_SERVER['PATH_INFO'], '/') : '';
+    $method = $_SERVER['REQUEST_METHOD'];
+    switch($path){
       case "products":
-         if ($method === "GET") {
+         if($method === "GET"){
             $stmt = $pdo->prepare("SELECT * FROM products_tb");
             $stmt->execute();
             $product_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -17,7 +24,7 @@ try {
          break;
 
       case "users":
-         if ($method === "GET") {
+         if($method === "GET"){
             $stmt = $pdo->prepare("SELECT * FROM users_tb");
             $stmt->execute();
             $user_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -26,23 +33,16 @@ try {
          }
          break;
       case "orders":
-         if ($method === "GET") {
+         if($method === "GET"){
             $stmt = $pdo->prepare("SELECT * FROM orders_tb");
             $stmt->execute();
             $user_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            foreach ($user_data as $key => $value) {
-               if (isset($value['order_items'])) {
-                  // ถอดรหัสข้อความ String ให้กลายเป็นก้อนข้อมูล Object/Array ของ PHP
-                  
-                  $user_data[$key]['order_items'] = json_decode($value['order_items']);
-               }
-            }
             echo json_encode($user_data);
 
          }
          break;
       case "promotions":
-         if ($method === "GET") {
+         if($method === "GET"){
             $stmt = $pdo->prepare("SELECT * FROM promotion_tb");
             $stmt->execute();
             $user_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -52,14 +52,14 @@ try {
          break;
       default:
          http_response_code(404);
-         echo json_encode(['error' => "Route not found"]);
-         break;
-   }
+         echo json_encode(['error'=>"Route not found"]);
+         break;   
+    }
+    
 
+ }catch(PDOException $e){
+    http_response_code((500));
+    echo json_encode(["error"=> $e ->getMessage()]);
 
-} catch (PDOException $e) {
-   http_response_code((500));
-   echo json_encode(["error" => $e->getMessage()]);
-
-}
+ }
 ?>

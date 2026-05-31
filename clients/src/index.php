@@ -155,34 +155,54 @@ try {
     </style>
 </head>
 <body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
+            <div class="container">
+                <!-- Brand Logo -->
+                <a class="navbar-brand" href="/home">
+                    <!-- <img src="./images/gemini.jpg" alt="Logo" width="30"
+                        height="24" class="d-inline-block align-text-top me-2"> -->
+                    E-book
+                </a>
 
-<!-- ═══ NAVBAR ═══ -->
-<nav class="navbar navbar-expand-lg sticky-top">
-    <div class="container">
-        <a class="navbar-brand fw-bold fs-3 text-primary font-outfit" href="index.php">📚 E-Book</a>
-
-        <button class="navbar-toggler border-0 shadow-none" type="button"
-                data-bs-toggle="collapse" data-bs-target="#navMain" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navMain">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1">
-                <li class="nav-item"><a class="nav-link fw-semibold text-primary" href="index.php">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="Product.php">Products</a></li>
-                <li class="nav-item"><a class="nav-link" href="order.php">My Orders</a></li>
-            </ul>
-            <div class="d-flex gap-2 align-items-center mt-2 mt-lg-0">
-                <button class="btn btn-outline-secondary rounded-pill px-3" type="button" onclick="location.href='signup.php'">
-                    Sign Up
+                <!-- Mobile Toggle Button -->
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
                 </button>
-                <button class="btn btn-primary rounded-pill px-3 position-relative" type="button"
-                        data-bs-toggle="offcanvas" data-bs-target="#cartSidebar">
-                    <i class="bi bi-cart3 me-1"></i> Cart
-                    <span id="cart-count-badge"
-                          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                          style="display:none; font-size:0.65rem;">0</span>
-                </button>
+
+                <!-- Navbar Links and Actions -->
+                <div class="collapse navbar-collapse" id="navbarMain">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="#">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/product.php">Products</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="/order.php">Order</a>
+                        </li>
+
+                    </ul>
+
+                    <!-- Search Bar -->
+                    <form class="d-flex gap-2" role="search">
+                        <input class="form-control me-2 rounded-pill" type="search" placeholder="Search..."
+                            aria-label="Search">
+                        <!-- <button class="btn btn-outline-primary btn-search" type="submit">Search</button> -->
+                        <button class="btn btn-outline-primary btn-search " type="submit">
+                            <a href="./signup.php " class="text-decoration-none">SignUp</a>
+                        </button>
+                        <button class="btn btn-outline-primary btn-search " type="submit">
+                            <a href="./cart.php" class="text-decoration-none">
+                                Cart
+                            </a>
+                        </button>
+
+                    </form>
+                </div>
             </div>
         </div>
     </div>

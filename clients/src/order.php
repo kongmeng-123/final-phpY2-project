@@ -1,5 +1,9 @@
 <?php
+session_start();
 require_once __DIR__ . '/../../api/db_config.php';
+
+$isLoggedIn = isset($_SESSION['user_id']);
+$userName = $isLoggedIn ? $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'] : '';
 
 try {
     // Fetch all orders sorted by date
@@ -123,7 +127,19 @@ try {
 
                 <!-- Actions -->
                 <div class="d-flex gap-2 align-items-center">
-                    <button class="btn btn-outline-primary rounded-pill px-3" type="button" onclick="location.href='signup.php'">Sign Up</button>
+                    <?php if ($isLoggedIn): ?>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary rounded-pill px-3 dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle me-1"></i> <?php echo htmlspecialchars($userName); ?>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 mt-2" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item py-2 text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                            </ul>
+                        </div>
+                    <?php else: ?>
+                        <button class="btn btn-outline-primary rounded-pill px-3" type="button" onclick="location.href='signup.php'">Sign Up</button>
+                        <button class="btn btn-primary rounded-pill px-3" type="button" onclick="location.href='login.php'">Login</button>
+                    <?php endif; ?>
                     <button class="btn btn-primary rounded-pill px-3 position-relative" type="button" onclick="location.href='Cart.php'">
                         <i class="bi bi-cart3 me-1"></i> Cart
                         <span id="cart-count-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">0</span>

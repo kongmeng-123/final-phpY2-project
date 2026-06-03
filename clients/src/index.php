@@ -1,6 +1,10 @@
 <?php
+session_start();
 // index.php – Home page
 // Products are loaded client-side via the REST API (/api/api.php/products)
+
+$isLoggedIn = isset($_SESSION['user_id']);
+$userName = $isLoggedIn ? $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'] : '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -198,8 +202,23 @@
             </ul>
 
             <div class="d-flex gap-2 align-items-center mt-2 mt-lg-0">
-                <button class="btn btn-outline-secondary rounded-pill px-3"
-                        onclick="location.href='signup.php'">Sign Up</button>
+                <?php if ($isLoggedIn): ?>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary rounded-pill px-3 dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-1"></i> <?php echo htmlspecialchars($userName); ?>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 mt-2" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item py-2" href="order.php"><i class="bi bi-bag me-2"></i>My Orders</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item py-2 text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                <?php else: ?>
+                    <button class="btn btn-outline-secondary rounded-pill px-3"
+                            onclick="location.href='signup.php'">Sign Up</button>
+                    <button class="btn btn-primary rounded-pill px-3"
+                            onclick="location.href='login.php'">Login</button>
+                <?php endif; ?>
                 <!-- Cart toggle button -->
                 <button id="cart-btn"
                         class="btn btn-primary rounded-pill px-3 position-relative"

@@ -1,8 +1,12 @@
 <?php
+session_start();
 // Product.php – All Books / search page
 // Products are loaded client-side via the REST API (/api/api.php/products)
 // The search query is passed to the API via ?q= URL param, handled in JS.
 $search = htmlspecialchars(trim($_GET['q'] ?? ''));
+
+$isLoggedIn = isset($_SESSION['user_id']);
+$userName = $isLoggedIn ? $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'] : '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -124,8 +128,23 @@ $search = htmlspecialchars(trim($_GET['q'] ?? ''));
                 <li class="nav-item"><a class="nav-link" href="order.php">My Orders</a></li>
             </ul>
             <div class="d-flex gap-2 align-items-center mt-2 mt-lg-0">
-                <button class="btn btn-outline-secondary rounded-pill px-3"
-                        onclick="location.href='signup.php'">Sign Up</button>
+                <?php if ($isLoggedIn): ?>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary rounded-pill px-3 dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-1"></i> <?php echo htmlspecialchars($userName); ?>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 mt-2" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item py-2" href="order.php"><i class="bi bi-bag me-2"></i>My Orders</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item py-2 text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                <?php else: ?>
+                    <button class="btn btn-outline-secondary rounded-pill px-3"
+                            onclick="location.href='signup.php'">Sign Up</button>
+                    <button class="btn btn-primary rounded-pill px-3"
+                            onclick="location.href='login.php'">Login</button>
+                <?php endif; ?>
                 <button id="cart-btn"
                         class="btn btn-primary rounded-pill px-3 position-relative"
                         data-bs-toggle="offcanvas" data-bs-target="#cartSidebar">

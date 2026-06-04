@@ -17,6 +17,9 @@
         integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
         referrerpolicy="no-referrer" />
     <link href="../css/sb-admin-2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+        integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="../vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet" />
 </head>
 
@@ -33,7 +36,7 @@
                 </div>
             </a>
             <hr class="sidebar-divider my-0" />
-            <li class="nav-item">
+            <li class="nav-item ">
                 <a class="nav-link" href="index.php">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span>
@@ -50,9 +53,9 @@
                 <div class="collapse" id="collapseOrder">
                     <div class="py-2 bg-white collapse-inner rounded">
                         <h6 class="collapse-header">Order detail :</h6>
-                        <a class="collapse-item" href="allOrder.php">All</a>
-                        <a class="collapse-item active" href="newOrder.php">New order</a>
-                        <a class="collapse-item" href="checkOrder.php">Check order</a>
+                        <a class="collapse-item active" href="checkPayment.php">Payment</a>
+                        <a class="collapse-item" href="checkOrder.php">Order status</a>
+                        <a class="collapse-item" href="orderHistory.php">History</a>
                     </div>
                 </div>
             </li>
@@ -128,7 +131,7 @@
                             </div>
                         </div>
                     </form>
-                     <ul class="navbar-nav ml-auto">
+                    <ul class="navbar-nav ml-auto">
                         <li class="nav-item dropdown no-arrow d-sm-none">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="searchDropdown" role="button">
@@ -156,7 +159,7 @@
                                 <i class="fas fa-fw fa-bell"></i>
                                 <span class="badge badge-counter badge-danger">0</span>
                             </a>
-                            
+
                         </li>
                         <li class="nav-item dropdown no-arrow mx-1">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
@@ -164,126 +167,66 @@
                                 <i class="fas fa-fw fa-envelope"></i>
                                 <span class="badge badge-counter badge-danger">0</span>
                             </a>
-                            
+
                         </li>
                         <div class="d-none d-sm-block topbar-divider"></div>
                         <li class="nav-item dropdown no-arrow">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="userDropdown" role="button">
                                 <span class="small d-lg-inline d-none mr-2 text-gray-600">Douglas McGee</span>
-                                <img class="rounded-circle img-profile" src="https://cdn-icons-png.flaticon.com/512/9703/9703596.png" />
+                                <img class="rounded-circle img-profile"
+                                    src="https://cdn-icons-png.flaticon.com/512/9703/9703596.png" />
                             </a>
-                            
+
                         </li>
                     </ul>
                 </nav>
                 <div class="container-fluid">
-                    <h1 class="h3 mb-2 text-gray-800">New Order</h1>
+                    <h1 class="h3 mb-2 text-gray-800">All Order</h1>
 
                     <div class="shadow mb-4 card">
+                        <div class="card-header py-3 row justify-content-between align-items-center">
+                            <div>
+                                <button class="btn bg-primary text-white" onclick="handleBill('All')">All</button>
+                                <button class="btn bg-primary text-white" onclick="handleBill('Payment Successful')">Payment
+                                    Successful</button>
+                                <button class="btn bg-primary text-white" onclick="handleBill('Payment Failed')">Payment
+                                    Failed</button>
+                                <button class="btn bg-primary text-white" onclick="handleBill('New')">New</button>
+                            </div>
+                            <div>
+                                <input type="search" id="search_data" placeholder="Search"
+                                style="border:2px solid gray;padding: 4px;border-radius:8px; width: 230px;">
+                            </div>
 
+                            
+                            
+                            
+                       
+                        </div>
+
+                        
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table cellspacing="0" class="table table-bordered" id="dataTable" width="100%">
+
+                                <table cellspacing="0" class="table table-bordered" width="100%">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
-                                            <th>Product Name</th>
                                             <th>Product Image</th>
                                             <th>Total Price</th>
                                             <th>Count</th>
                                             <th>User Name</th>
+                                            <th>Order Date</th>
                                             <th>Bill</th>
+
                                         </tr>
                                     </thead>
 
-                                    <tbody>
-                                        <tr>
-                                            <td><a href="#" title="order detail">0001</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="https://cdn.gramedia.com/uploads/items/9786020333175_rich-dad-poor-dad-_edisi-revisi_.jpg"
-                                                        alt="product image" height="60" width="50">
-                                                </div>
-                                            </td>
-                                            <td>$ 30</td>
-                                            <td>2</td>
-                                            <td>kongmeng</td>
-                                            <td>
-                                                <a href="#" title="check bill">
-                                                    <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
-                                                        alt="bill" height="60" width="50">
-                                                </a>
-                                            </td>
-                                        </tr>
-
-
-                                        <tr>
-                                            <td><a href="#" title="order detail">0001</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="https://cdn.gramedia.com/uploads/items/9786020333175_rich-dad-poor-dad-_edisi-revisi_.jpg"
-                                                        alt="product image" height="60" width="50">
-                                                </div>
-                                            </td>
-                                            <td>$ 30</td>
-                                            <td>2</td>
-                                            <td>kongmeng</td>
-                                            <td>
-                                                <a href="#" title="check bill">
-                                                    <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
-                                                        alt="bill" height="60" width="50">
-                                                </a>
-                                            </td>
-                                        </tr>
-
-
-                                        <tr>
-                                            <td><a href="#" title="order detail">0001</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="https://cdn.gramedia.com/uploads/items/9786020333175_rich-dad-poor-dad-_edisi-revisi_.jpg"
-                                                        alt="product image" height="60" width="50">
-                                                </div>
-                                            </td>
-                                            <td>$ 30</td>
-                                            <td>2</td>
-                                            <td>kongmeng</td>
-                                            <td>
-                                                <a href="#" title="check bill">
-                                                    <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
-                                                        alt="bill" height="60" width="50">
-                                                </a>
-                                            </td>
-                                        </tr>
-
-
-                                        <tr>
-                                            <td><a href="#" title="order detail">0001</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="https://cdn.gramedia.com/uploads/items/9786020333175_rich-dad-poor-dad-_edisi-revisi_.jpg"
-                                                        alt="product image" height="60" width="50">
-                                                </div>
-                                            </td>
-                                            <td>$ 30</td>
-                                            <td>2</td>
-                                            <td>kongmeng</td>
-                                            <td>
-                                                <a href="#" title="check bill">
-                                                    <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
-                                                        alt="bill" height="60" width="50">
-                                                </a>
-                                            </td>
-                                        </tr>
-
-
+                                    <tbody id="tableBody">
 
                                     </tbody>
+
                                 </table>
                             </div>
                         </div>
@@ -327,6 +270,124 @@
     <script src="../vendor/datatables/jquery.dataTables.min.js"></script>
     <script src="../vendor/datatables/dataTables.bootstrap4.min.js"></script>
     <script src="../js/demo/datatables-demo.js"></script>
+
+    <script>
+
+        let allOrder = []; // เก็บข้อมูลทั้งหมดไว้ที่นี่
+        let users = []
+
+        async function loadProduct() {
+            try {
+                const response = await fetch('http://localhost:9090/api/api.php/orders');
+                const responseU = await fetch('http://localhost:9090/api/api.php/users');
+
+                if (!response.ok && !responseU.ok) throw new Error("network response was not ok");
+
+                allOrder = await response.json(); // เก็บข้อมูลใส่ตัวแปร Global
+                users = await responseU.json();
+
+                console.log(allOrder[0].order_items)
+                renderTable(allOrder); // แสดงผลครั้งแรก
+            } catch (error) {
+                console.error("something wrong, " + error);
+            }
+        }
+
+
+        // ฟังก์ชันสำหรับวาดตารางใหม่ (ตัวเดียวจบ)
+        function renderTable(dataToDisplay) {
+            let tb_body = document.getElementById("tableBody");
+            tb_body.innerHTML = ""; // ล้างตารางก่อนเสมอ
+
+            dataToDisplay.forEach(item => {
+                let remain = 0
+                let totalPrice = 0
+                let totalCount = 0
+                let userName = users.filter(user => user.user_id === item.user_id)[0]?.Fname || "Unknown User";
+
+                item.order_items.forEach(orderItem => {
+                    totalPrice += parseFloat(orderItem.price) * parseFloat(orderItem.amount)
+                    totalCount += parseFloat(orderItem.amount)
+                })
+
+                if (item.order_items.length > 2) {
+                    remain = item.order_items.length - 2
+                }
+
+                let tableRow = document.createElement("tr");
+                tableRow.innerHTML = `
+            
+                                    <td><a href="orderDetail.php?order_id=${item.order_id}" title="order detail">${item.order_id}</a></td>
+                                    
+                                    <td>
+                                        <div>
+                                            ${item.order_items.slice(0, 2).map(orderItem => `
+                                                    <img src="../img/${orderItem.image_src}" alt="product image" height="60" width="50">
+                                                `).join('')
+
+                    }
+                                                <span id ="remain">+ ${remain}</span>
+
+                                        </div>
+                                    </td>
+                                    <td>$ ${totalPrice.toFixed(2)}</td>
+                                    <td>${totalCount}</td>
+                                    <td>${userName}</td>
+                                    <td>${item.date_order}</td>
+                                    
+                                    <td>
+                                        <a href="checkBill.php?order_id=${item.order_id}" title="check bill" style="text-decoration: none;">
+                                            <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
+                                                alt="bill" height="60" width="50">
+
+                                        </a>
+                                        <i class="fa-regular fa-circle-check ${item.bill_status == 'success' ? 'text-success' : ''}"></i>
+                                        <i class="fa-solid fa-ban ${item.bill_status == 'fail' ? 'text-danger' : ''}"></i>
+                                        <i class="fa-regular fa-circle-pause ${item.bill_status == 'wait' ? 'text-primary' : ''}"></i>
+                                    </td>
+                                
+                                        
+                `;
+                tb_body.appendChild(tableRow);
+            });
+        }
+
+        // 1. จัดการการค้นหา (Search)
+        document.getElementById("search_data").addEventListener("input", function () {
+
+            let filter = this.value.toLowerCase();
+
+
+            let filtered = allOrder.filter(item => {
+                let userName = users.filter(user => user.user_id === item.user_id)[0]?.Fname || "Unknown User";
+                let matchesName = userName.toLowerCase().includes(filter);
+                let matchOrderId = item.order_id.toString().toLowerCase().includes(filter);
+                console.log(matchesName, matchOrderId)
+
+                return matchesName || matchOrderId;
+            });
+            renderTable(filtered);
+        });
+
+        // 2. จัดการหมวดหมู่ (Bill)
+        function handleBill(Bill) {
+            BillNow = Bill;
+            // เมื่อเปลี่ยนหมวดหมู่ ให้ทำการกรองข้อมูลใหม่ทันที
+            let filtered = allOrder.filter(item => {
+                if (Bill === "All") return true;
+                if (Bill === "Payment Successful") return item.bill_status === "success";
+                if (Bill === "Payment Failed") return item.bill_status === "fail";
+                if (Bill === "New") return item.bill_status === "wait";
+            });
+            renderTable(filtered);
+        }
+
+        loadProduct();
+
+
+
+
+    </script>
 
 </body>
 

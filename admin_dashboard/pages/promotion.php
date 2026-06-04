@@ -53,9 +53,9 @@
                 <div class="collapse" id="collapseOrder">
                     <div class="py-2 bg-white collapse-inner rounded">
                         <h6 class="collapse-header">Order detail :</h6>
-                        <a class="collapse-item" href="allOrder.php">All</a>
-                        <a class="collapse-item" href="newOrder.php">New order</a>
-                        <a class="collapse-item" href="checkOrder.php">Check order</a>
+                        <a class="collapse-item" href="checkPayment.php">Payment</a>
+                        <a class="collapse-item" href="checkOrder.php">Order status</a>
+                        <a class="collapse-item" href="orderHistory.php">History</a>
                     </div>
                 </div>
             </li>
@@ -159,7 +159,7 @@
                                 <i class="fas fa-fw fa-bell"></i>
                                 <span class="badge badge-counter badge-danger">0</span>
                             </a>
-                            
+
                         </li>
                         <li class="nav-item dropdown no-arrow mx-1">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
@@ -167,16 +167,17 @@
                                 <i class="fas fa-fw fa-envelope"></i>
                                 <span class="badge badge-counter badge-danger">0</span>
                             </a>
-                            
+
                         </li>
                         <div class="d-none d-sm-block topbar-divider"></div>
                         <li class="nav-item dropdown no-arrow">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="userDropdown" role="button">
                                 <span class="small d-lg-inline d-none mr-2 text-gray-600">Douglas McGee</span>
-                                <img class="rounded-circle img-profile" src="https://cdn-icons-png.flaticon.com/512/9703/9703596.png" />
+                                <img class="rounded-circle img-profile"
+                                    src="https://cdn-icons-png.flaticon.com/512/9703/9703596.png" />
                             </a>
-                            
+
                         </li>
                     </ul>
                 </nav>
@@ -191,65 +192,22 @@
 
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table cellspacing="0" class="table table-bordered" id="dataTable" width="100%">
+                                
+                                <table cellspacing="0" class="table table-bordered" width="100%">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
                                             <th>Title</th>
                                             <th>Status</th>
-                                            <th>Type</th>
                                             <th>Discount</th>
                                             <th>Start</th>
                                             <th>Update</th>
                                             <th>End</th>
+
                                         </tr>
                                     </thead>
 
-                                    <tbody>
-                                        <tr>
-                                            <td><a href="#" title="order detail">0001</a></td>
-                                            <td>New year</td>
-                                            <td>active</td>
-                                            <td>Category How to</td>
-                                            <td>30%</td>
-                                            <td>1/2/2001</td>
-                                            <td>1/2/2001</td>
-                                            <td>1/2/2001</td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="#" title="order detail">0001</a></td>
-                                            <td>New year</td>
-                                            <td>active</td>
-                                            <td>Category How to</td>
-                                            <td>30%</td>
-                                            <td>1/2/2001</td>
-                                            <td>1/2/2001</td>
-                                            <td>1/2/2001</td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="#" title="order detail">0001</a></td>
-                                            <td>New year</td>
-                                            <td>active</td>
-                                            <td>Category How to</td>
-                                            <td>30%</td>
-                                            <td>1/2/2001</td>
-                                            <td>1/2/2001</td>
-                                            <td>1/2/2001</td>
-                                        </tr>
-                                        <tr>
-                                            <td><a href="#" title="order detail">0001</a></td>
-                                            <td>New year</td>
-                                            <td>active</td>
-                                            <td>Category How to</td>
-                                            <td>30%</td>
-                                            <td>1/2/2001</td>
-                                            <td>1/2/2001</td>
-                                            <td>1/2/2001</td>
-                                        </tr>
-
-
-
-
+                                    <tbody id="tableBody">
 
                                     </tbody>
                                 </table>
@@ -295,6 +253,76 @@
     <script src="../vendor/datatables/jquery.dataTables.min.js"></script>
     <script src="../vendor/datatables/dataTables.bootstrap4.min.js"></script>
     <script src="../js/demo/datatables-demo.js"></script>
+    <script>
+
+        let promotions = []; // เก็บข้อมูลทั้งหมดไว้ที่นี่
+
+        async function loadProduct() {
+            try {
+                const response = await fetch('http://localhost:9090/api/api.php/promotions');
+                if (!response.ok) throw new Error("network response was not ok");
+
+                promotions = await response.json(); // เก็บข้อมูลใส่ตัวแปร Global
+                console.log(promotions)
+                renderTable(promotions); // แสดงผลครั้งแรก
+            } catch (error) {
+                console.error("something wrong, " + error);
+            }
+        }
+
+        // ฟังก์ชันสำหรับวาดตารางใหม่ (ตัวเดียวจบ)
+        function renderTable(dataToDisplay) {
+            let tb_body = document.getElementById("tableBody");
+            tb_body.innerHTML = ""; // ล้างตารางก่อนเสมอ
+
+            
+
+            dataToDisplay.forEach(item => {
+                let dateNow = new Date();
+                let start_date = new Date(item.start_date);
+                let end_date = new Date(item.end_date);
+
+                function handleColor(date){
+                    
+                    if(start_date > dateNow) return "blue";
+                    if((start_date < dateNow) && (end_date > dateNow)) return "green";
+                    return "red"
+
+                }
+                function handleStatus(date){
+                    if(start_date > dateNow) return "Inactive";
+                    if((start_date < dateNow) && (end_date > dateNow)) return "Active";
+                    return "Expired"
+                }
+
+                
+                let status = item
+                let tableRow = document.createElement("tr");
+                tableRow.innerHTML = `
+                                    <tr>
+                                        <td><a href="createPro.php?id=${item.pro_id}">${item.pro_id}</a></td>
+                                        <td>${item.title}</td>
+                                        <td style="color: ${handleColor(item)};">${handleStatus(item)}</td>
+                                        <td>${item.discount} %</td>
+                                        <td>${item.start_date}</td>
+                                        <td>${item.update_date}</td>
+                                        <td>${item.end_date}</td>
+                                       
+                                    </tr>
+                `;
+                tb_body.appendChild(tableRow);
+            });
+        }
+
+
+        loadProduct();
+
+
+
+
+    </script>
+
+
 
 </body>
 

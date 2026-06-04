@@ -53,9 +53,9 @@
                 <div class="collapse" id="collapseOrder">
                     <div class="py-2 bg-white collapse-inner rounded">
                         <h6 class="collapse-header">Order detail :</h6>
-                        <a class="collapse-item active" href="allOrder.php">All</a>
-                        <a class="collapse-item" href="newOrder.php">New order</a>
-                        <a class="collapse-item" href="checkOrder.php">Check order</a>
+                        <a class="collapse-item active" href="checkPayment.php">All</a>
+                        
+                        <a class="collapse-item" href="checkOrder.php">Order status</a>
                     </div>
                 </div>
             </li>
@@ -312,7 +312,7 @@
                     document.getElementById('expressService').textContent = `${order.express_with}`;
                     document.getElementById('expressAddress').textContent = `${order.express_address}`;
                     document.getElementById('orderDate').textContent = `${order.date_order}`;
-                    document.getElementById('orderStatus').textContent = `${order.status}`;
+                    document.getElementById('orderStatus').textContent = `${order.order_status}`;
                     document.getElementById('orderTotal').textContent = `${totalPrice}$`;
 
                     order.order_items.map(item =>{

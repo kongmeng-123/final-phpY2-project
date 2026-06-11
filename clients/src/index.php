@@ -1,12 +1,21 @@
 <?php
+session_start();
 require_once __DIR__ . '/../../api/db_config.php';
 
 try {
-    $stmt = $pdo->prepare("SELECT * FROM products_tb ORDER BY id ASC");
-    $stmt->execute();
-    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // 1. Fetch all products
+    $stmtProducts = $pdo->prepare("SELECT * FROM products_tb ORDER BY id ASC");
+    $stmtProducts->execute();
+    $products = $stmtProducts->fetchAll(PDO::FETCH_ASSOC);
+
+    // 2. Fetch active promotions for the Hero section
+    $stmtPromos = $pdo->prepare("SELECT * FROM promotion_tb WHERE status_now = 'Active' ORDER BY create_date DESC LIMIT 1");
+    $stmtPromos->execute();
+    $activePromo = $stmtPromos->fetch(PDO::FETCH_ASSOC);
+
 } catch (PDOException $e) {
     $products = [];
+    $activePromo = null;
     $dbError = $e->getMessage();
 }
 ?>
@@ -173,9 +182,25 @@ try {
                 <li class="nav-item"><a class="nav-link" href="order.php">My Orders</a></li>
             </ul>
             <div class="d-flex gap-2 align-items-center mt-2 mt-lg-0">
-                <button class="btn btn-outline-secondary rounded-pill px-3" type="button" onclick="location.href='signup.php'">
-                    Sign Up
-                </button>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary rounded-pill px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle me-1"></i> <?php echo htmlspecialchars($_SESSION['user_name']); ?>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2">
+                            <li><a class="dropdown-item py-2" href="order.php"><i class="bi bi-bag-check me-2"></i>My Orders</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item py-2 text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+                        </ul>
+                    </div>
+                <?php else: ?>
+                    <button class="btn btn-outline-secondary rounded-pill px-3" type="button" onclick="location.href='signup.php'">
+                        Sign Up
+                    </button>
+                    <button class="btn btn-primary rounded-pill px-3" type="button" onclick="location.href='login.php'">
+                        Sign In
+                    </button>
+                <?php endif; ?>
                 <button class="btn btn-primary rounded-pill px-3 position-relative" type="button"
                         data-bs-toggle="offcanvas" data-bs-target="#cartSidebar">
                     <i class="bi bi-cart3 me-1"></i> Cart
@@ -193,11 +218,21 @@ try {
     <div class="container">
         <div class="row align-items-center g-3">
             <div class="col-12 col-md-8">
-                <span class="badge-category mb-2">📖 Bestsellers</span>
-                <h1 class="display-5 fw-bold text-dark mb-2">Explore Our Best Books</h1>
-                <p class="text-muted mb-0 fs-6">
-                    Curated bestsellers that change lives — from personal finance to mindset mastery.
-                </p>
+                <?php if ($activePromo): ?>
+                    <span class="badge-category mb-2 bg-danger text-white">🔥 <?php echo htmlspecialchars($activePromo['title']); ?></span>
+                    <h1 class="display-5 fw-bold text-dark mb-2">
+                        Get <?php echo $activePromo['type'] === 'Percentage' ? $activePromo['discount'] . '%' : '₭' . number_format($activePromo['discount']); ?> Off!
+                    </h1>
+                    <p class="text-muted mb-0 fs-6">
+                        Limited time offer! Ends on: <?php echo date('M d, Y', strtotime($activePromo['end_date'])); ?>
+                    </p>
+                <?php else: ?>
+                    <span class="badge-category mb-2">📖 Bestsellers</span>
+                    <h1 class="display-5 fw-bold text-dark mb-2">Explore Our Best Books</h1>
+                    <p class="text-muted mb-0 fs-6">
+                        Curated bestsellers that change lives — from personal finance to mindset mastery.
+                    </p>
+                <?php endif; ?>
             </div>
             <div class="col-12 col-md-4 text-md-end">
                 <a href="Product.php" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-semibold">
@@ -225,7 +260,10 @@ try {
             </div>
         <?php else: ?>
             <?php foreach ($products as $p):
-                $imgSrc = '/admin_dashboard/img/' . urlencode($p['image_src'] ?? '');
+                // Fix: Use rawurlencode for %20 instead of + for spaces
+                // Fix: Use relative path ../../ instead of absolute /
+                $imgName = $p['image_src'] ?? '';
+                $imgSrc = '../../admin_dashboard/img/' . rawurlencode($imgName);
                 $pid    = 'p-' . $p['id'];
                 $name   = htmlspecialchars($p['product_name']);
                 $price  = number_format($p['price'], 2);

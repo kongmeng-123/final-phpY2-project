@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once __DIR__ . '/../../api/db_config.php';
 
 try {
@@ -123,7 +124,21 @@ try {
 
                 <!-- Actions -->
                 <div class="d-flex gap-2 align-items-center">
-                    <button class="btn btn-outline-primary rounded-pill px-3" type="button" onclick="location.href='signup.php'">Sign Up</button>
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary rounded-pill px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle me-1"></i> <?php echo htmlspecialchars($_SESSION['user_name']); ?>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2">
+                                <li><a class="dropdown-item py-2" href="index.php"><i class="bi bi-house me-2"></i>Home</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item py-2 text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+                            </ul>
+                        </div>
+                    <?php else: ?>
+                        <button class="btn btn-outline-primary rounded-pill px-3" type="button" onclick="location.href='signup.php'">Sign Up</button>
+                        <button class="btn btn-primary rounded-pill px-3" type="button" onclick="location.href='login.php'">Sign In</button>
+                    <?php endif; ?>
                     <button class="btn btn-primary rounded-pill px-3 position-relative" type="button" onclick="location.href='Cart.php'">
                         <i class="bi bi-cart3 me-1"></i> Cart
                         <span id="cart-count-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">0</span>

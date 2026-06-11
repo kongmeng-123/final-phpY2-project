@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once __DIR__ . '/../../api/db_config.php';
 
 $search = trim($_GET['q'] ?? '');
@@ -118,7 +119,21 @@ try {
                 <li class="nav-item"><a class="nav-link" href="order.php">My Orders</a></li>
             </ul>
             <div class="d-flex gap-2 align-items-center mt-2 mt-lg-0">
-                <button class="btn btn-outline-secondary rounded-pill px-3" onclick="location.href='signup.php'">Sign Up</button>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary rounded-pill px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle me-1"></i> <?php echo htmlspecialchars($_SESSION['user_name']); ?>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2">
+                            <li><a class="dropdown-item py-2" href="order.php"><i class="bi bi-bag-check me-2"></i>My Orders</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item py-2 text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+                        </ul>
+                    </div>
+                <?php else: ?>
+                    <button class="btn btn-outline-secondary rounded-pill px-3" onclick="location.href='signup.php'">Sign Up</button>
+                    <button class="btn btn-primary rounded-pill px-3" onclick="location.href='login.php'">Sign In</button>
+                <?php endif; ?>
                 <button class="btn btn-primary rounded-pill px-3 position-relative"
                         data-bs-toggle="offcanvas" data-bs-target="#cartSidebar">
                     <i class="bi bi-cart3 me-1"></i> Cart
@@ -180,7 +195,10 @@ try {
             </div>
         <?php else: ?>
             <?php foreach ($products as $p):
-                $imgSrc = '/admin_dashboard/img/' . urlencode($p['image_src'] ?? '');
+                // Fix: Use rawurlencode for %20 instead of + for spaces
+                // Fix: Use relative path ../../ instead of absolute /
+                $imgName = $p['image_src'] ?? '';
+                $imgSrc = '../../admin_dashboard/img/' . rawurlencode($imgName);
                 $pid    = 'p-' . $p['id'];
                 $name   = htmlspecialchars($p['product_name']);
                 $price  = number_format($p['price'], 2);

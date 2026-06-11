@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../../api/db_config.php';
+
 // Initialize error messages
 $errors = [];
 $username = $email = "";
@@ -30,22 +32,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // If there are no validation errors, proceed to registration logic
     if (empty($errors)) {
-        // Securely hash the password before saving to a database
-        $hashed_password = password_hash($_POST["password"], PASSWORD_DEFAULT);
+        try {
+            // Check if email already exists
+            $checkEmail = $pdo->prepare("SELECT user_id FROM users_tb WHERE email = :email");
+            $checkEmail->execute(['email' => $email]);
+            if ($checkEmail->fetch()) {
+                $errors['email'] = "Email is already registered.";
+            } else {
+                // Securely hash the password before saving
+                $hashed_password = password_hash($_POST["password"], PASSWORD_DEFAULT);
 
-        /* ===================================================================
-        PLACE YOUR DATABASE INSERTION HERE:
-        -------------------------------------------------------------------
-        $stmt = $pdo->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
-        $stmt->execute([$username, $email, $hashed_password]);
-        
-        header("Location: login.php?success=registered");
-        exit();
-        ===================================================================
-        */
-        
-        // Temporary success message for demonstration
-        $success_message = "Account created successfully!";
+                // Split username into Fname and Lname for users_tb
+                $parts = explode(' ', $username, 2);
+                $fname = $parts[0];
+                $lname = $parts[1] ?? '';
+
+                $stmt = $pdo->prepare("INSERT INTO users_tb (Fname, Lname, gender, email, password) VALUES (:fname, :lname, :gender, :email, :password)");
+                $stmt->execute([
+                    'fname' => $fname,
+                    'lname' => $lname,
+                    'gender' => 'Unspecified',
+                    'email' => $email,
+                    'password' => $hashed_password
+                ]);
+
+                header("Location: login.php?registered=true");
+                exit();
+            }
+        } catch (PDOException $e) {
+            $errors['db'] = "Database error: " . $e->getMessage();
+        }
     }
 }
 ?>

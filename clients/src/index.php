@@ -1,21 +1,17 @@
 <?php
-require_once __DIR__ . '/../../api/db_config.php';
+session_start();
+// index.php – Home page
+// Products are loaded client-side via the REST API (/api/api.php/products)
 
-try {
-    $stmt = $pdo->prepare("SELECT * FROM products_tb ORDER BY id ASC");
-    $stmt->execute();
-    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $products = [];
-    $dbError = $e->getMessage();
-}
+$isLoggedIn = isset($_SESSION['user_id']);
+$userName = $isLoggedIn ? $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'] : '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Book Shop – Bestseller Books</title>
+    <title>E-Book Shop </title>
     <meta name="description" content="Discover and buy the world's bestselling books online. Rich Dad Poor Dad, Mindset, Think and Grow Rich and more.">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -147,6 +143,28 @@ try {
         footer a { transition: color 0.2s; }
         footer a:hover { color: var(--primary) !important; }
 
+        /* Skeleton loader */
+        .skeleton {
+            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 8px;
+        }
+        @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .skeleton-card {
+            border: none;
+            border-radius: 18px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+        .skeleton-img  { height: 210px; }
+        .skeleton-line { height: 12px; margin-bottom: 8px; }
+        .skeleton-line.short { width: 60%; }
+
         /* Responsive tweaks */
         @media (max-width: 575px) {
             .hero-section { padding: 2rem 0 1.5rem; }
@@ -155,54 +173,62 @@ try {
     </style>
 </head>
 <body>
-        <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
-            <div class="container">
-                <!-- Brand Logo -->
-                <a class="navbar-brand" href="/home">
-                    <!-- <img src="./images/gemini.jpg" alt="Logo" width="30"
-                        height="24" class="d-inline-block align-text-top me-2"> -->
-                    E-book
-                </a>
 
-                <!-- Mobile Toggle Button -->
-                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false"
-                    aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+<!-- ═══ NAVBAR ═══ -->
+<nav class="navbar navbar-expand-lg navbar-light sticky-top">
+    <div class="container">
+        <!-- Brand -->
+        <a class="navbar-brand fw-bold fs-3 text-primary font-outfit" href="index.php">📚 E-Book</a>
+
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler border-0 shadow-none" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Links + Actions -->
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1">
+                <li class="nav-item">
+                    <a class="nav-link fw-semibold text-primary" aria-current="page" href="index.php">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="Product.php">Products</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="order.php">My Orders</a>
+                </li>
+            </ul>
+
+            <div class="d-flex gap-2 align-items-center mt-2 mt-lg-0">
+                <?php if ($isLoggedIn): ?>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary rounded-pill px-3 dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-1"></i> <?php echo htmlspecialchars($userName); ?>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 mt-2" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item py-2" href="order.php"><i class="bi bi-bag me-2"></i>My Orders</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item py-2 text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                <?php else: ?>
+                    <button class="btn btn-outline-secondary rounded-pill px-3"
+                            onclick="location.href='signup.php'">Sign Up</button>
+                    <button class="btn btn-primary rounded-pill px-3"
+                            onclick="location.href='login.php'">Login</button>
+                <?php endif; ?>
+                <!-- Cart toggle button -->
+                <button id="cart-btn"
+                        class="btn btn-primary rounded-pill px-3 position-relative"
+                        data-bs-toggle="offcanvas" data-bs-target="#cartSidebar"
+                        aria-controls="cartSidebar">
+                    <i class="bi bi-cart3 me-1"></i> Cart
+                    <span id="cart-count-badge"
+                          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                          style="display:none; font-size:0.65rem;">0</span>
                 </button>
-
-                <!-- Navbar Links and Actions -->
-                <div class="collapse navbar-collapse" id="navbarMain">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/product.php">Products</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" href="/order.php">Order</a>
-                        </li>
-
-                    </ul>
-
-                    <!-- Search Bar -->
-                    <form class="d-flex gap-2" role="search">
-                        <input class="form-control me-2 rounded-pill" type="search" placeholder="Search..."
-                            aria-label="Search">
-                        <!-- <button class="btn btn-outline-primary btn-search" type="submit">Search</button> -->
-                        <button class="btn btn-outline-primary btn-search " type="submit">
-                            <a href="./signup.php " class="text-decoration-none">SignUp</a>
-                        </button>
-                        <button class="btn btn-outline-primary btn-search " type="submit">
-                            <a href="./cart.php" class="text-decoration-none">
-                                Cart
-                            </a>
-                        </button>
-
-                    </form>
-                </div>
             </div>
         </div>
     </div>
@@ -230,60 +256,27 @@ try {
 
 <!-- ═══ PRODUCTS GRID ═══ -->
 <main class="container py-5">
-    <?php if (isset($dbError)): ?>
-        <div class="alert alert-warning rounded-4 mb-4">
-            <i class="bi bi-exclamation-triangle me-2"></i>Could not load products: <?php echo htmlspecialchars($dbError); ?>
-        </div>
-    <?php endif; ?>
+    <!-- Error alert (shown by JS if fetch fails) -->
+    <div id="fetch-error" class="alert alert-warning rounded-4 mb-4 d-none">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <span id="fetch-error-msg">Could not load products.</span>
+    </div>
 
-    <div class="row row-cols-2 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3 g-md-4">
-        <?php if (empty($products)): ?>
-            <div class="col-12 text-center py-5 text-muted">
-                <i class="bi bi-journal-x fs-1 d-block mb-3 text-primary opacity-50"></i>
-                <h5 class="fw-bold">No books found</h5>
-                <p class="small">The bookstore will be restocked soon!</p>
-            </div>
-        <?php else: ?>
-            <?php foreach ($products as $p):
-                $imgSrc = '/admin_dashboard/img/' . urlencode($p['image_src'] ?? '');
-                $pid    = 'p-' . $p['id'];
-                $name   = htmlspecialchars($p['product_name']);
-                $price  = number_format($p['price'], 2);
-                $cat    = htmlspecialchars($p['category'] ?? 'Book');
-                $stock  = intval($p['count']);
-            ?>
-            <div class="col">
-                <div class="book-card h-100 d-flex flex-column">
-                    <div class="book-img-wrap">
-                        <img src="<?php echo $imgSrc; ?>"
-                             alt="<?php echo $name; ?>"
-                             loading="lazy"
-                             onerror="this.src='https://placehold.co/300x210/6366f1/ffffff?text=Book'">
-                    </div>
-                    <div class="p-3 d-flex flex-column flex-grow-1">
-                        <span class="badge-category"><?php echo $cat; ?></span>
-                        <h6 class="fw-bold mb-1" style="font-size:0.88rem; line-height:1.35;"><?php echo $name; ?></h6>
-                        <p class="text-muted mb-2 flex-grow-1" style="font-size:0.75rem;">
-                            <?php echo $stock > 0
-                                ? "<i class='bi bi-check-circle text-success me-1'></i>{$stock} in stock"
-                                : "<span class='text-danger'><i class='bi bi-x-circle me-1'></i>Out of stock</span>"; ?>
-                        </p>
-                        <div class="d-flex align-items-center justify-content-between border-top pt-2 mt-auto flex-wrap gap-2">
-                            <span class="fw-bold text-primary" style="font-size:0.95rem;">₭<?php echo $price; ?></span>
-                            <button class="btn-cart btn-add-cart"
-                                    data-id="<?php echo $pid; ?>"
-                                    data-name="<?php echo $name; ?>"
-                                    data-price="<?php echo $p['price']; ?>"
-                                    data-img="<?php echo $imgSrc; ?>"
-                                    <?php echo $stock <= 0 ? 'disabled' : ''; ?>>
-                                <i class="bi bi-cart-plus me-1"></i><?php echo $stock > 0 ? 'Add' : 'Sold Out'; ?>
-                            </button>
-                        </div>
-                    </div>
+    <div id="products-grid"
+         class="row row-cols-2 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3 g-md-4">
+        <!-- Skeleton placeholders while loading -->
+        <?php for ($i = 0; $i < 10; $i++): ?>
+        <div class="col skeleton-placeholder">
+            <div class="skeleton-card p-0">
+                <div class="skeleton skeleton-img"></div>
+                <div class="p-3">
+                    <div class="skeleton skeleton-line short mb-2"></div>
+                    <div class="skeleton skeleton-line"></div>
+                    <div class="skeleton skeleton-line short"></div>
                 </div>
             </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
+        </div>
+        <?php endfor; ?>
     </div>
 </main>
 
@@ -363,14 +356,11 @@ try {
 <!-- ═══ SCRIPTS ═══ -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // ─── Cart helpers ────────────────────────────────────────────────────────
     const CART_KEY = 'nuol_cart';
 
-    function getCart() {
-        return JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-    }
-    function saveCart(cart) {
-        localStorage.setItem(CART_KEY, JSON.stringify(cart));
-    }
+    function getCart()      { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); }
+    function saveCart(cart) { localStorage.setItem(CART_KEY, JSON.stringify(cart)); }
 
     function updateCartBadge() {
         const count = getCart().reduce((s, i) => s + i.qty, 0);
@@ -381,7 +371,7 @@ try {
     }
 
     function renderSidebarCart() {
-        const cart = getCart();
+        const cart      = getCart();
         const container = document.getElementById('sidebar-cart-items');
         const totalEl   = document.getElementById('sidebar-cart-total');
         if (!container) return;
@@ -424,7 +414,7 @@ try {
     window.removeCartItem = removeCartItem;
 
     function addToCart(product) {
-        const cart = getCart();
+        const cart     = getCart();
         const existing = cart.find(i => i.id === product.id);
         if (existing) { existing.qty++; } else { cart.push(product); }
         saveCart(cart);
@@ -434,19 +424,100 @@ try {
         if (sidebar) bootstrap.Offcanvas.getOrCreateInstance(sidebar).show();
     }
 
-    // Bind "Add to Cart" buttons (data-attribute approach)
-    document.querySelectorAll('.btn-add-cart').forEach(btn => {
-        btn.addEventListener('click', () => {
-            addToCart({
-                id:    btn.dataset.id,
-                name:  btn.dataset.name,
-                price: parseFloat(btn.dataset.price),
-                qty:   1,
-                img:   btn.dataset.img
-            });
-        });
-    });
+    // ─── Build a single product card HTML string ──────────────────────────
+    function buildCard(p) {
+        const imgSrc = `/admin_dashboard/img/${encodeURIComponent(p.image_src || '')}`;
+        const pid    = 'p-' + p.id;
+        const name   = escHtml(p.product_name || '');
+        const price  = parseFloat(p.price).toFixed(2);
+        const cat    = escHtml(p.category || 'Book');
+        const stock  = parseInt(p.count, 10) || 0;
+        const stockBadge = stock > 0
+            ? `<i class='bi bi-check-circle text-success me-1'></i>${stock} in stock`
+            : `<span class='text-danger'><i class='bi bi-x-circle me-1'></i>Out of stock</span>`;
 
+        return `
+        <div class="col">
+            <div class="book-card h-100 d-flex flex-column">
+                <div class="book-img-wrap">
+                    <img src="${imgSrc}"
+                         alt="${name}"
+                         loading="lazy"
+                         onerror="this.src='https://placehold.co/300x210/6366f1/ffffff?text=Book'">
+                </div>
+                <div class="p-3 d-flex flex-column flex-grow-1">
+                    <span class="badge-category">${cat}</span>
+                    <h6 class="fw-bold mb-1" style="font-size:0.88rem; line-height:1.35;">${name}</h6>
+                    <p class="text-muted mb-2 flex-grow-1" style="font-size:0.75rem;">${stockBadge}</p>
+                    <div class="d-flex align-items-center justify-content-between border-top pt-2 mt-auto flex-wrap gap-2">
+                        <span class="fw-bold text-primary" style="font-size:0.95rem;">₭${price}</span>
+                        <button class="btn-cart btn-add-cart"
+                                data-id="${pid}"
+                                data-name="${name}"
+                                data-price="${p.price}"
+                                data-img="${imgSrc}"
+                                ${stock <= 0 ? 'disabled' : ''}>
+                            <i class="bi bi-cart-plus me-1"></i>${stock > 0 ? 'Add' : 'Sold Out'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    function escHtml(str) {
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ─── Fetch products from the REST API ────────────────────────────────
+    async function loadProducts() {
+        const grid  = document.getElementById('products-grid');
+        const errEl = document.getElementById('fetch-error');
+        const msgEl = document.getElementById('fetch-error-msg');
+
+        try {
+            const res  = await fetch('/api/api.php/products');
+            if (!res.ok) throw new Error(`Server returned ${res.status}`);
+            const data = await res.json();
+
+            // Clear skeleton placeholders
+            grid.innerHTML = '';
+
+            if (!Array.isArray(data) || data.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-12 text-center py-5 text-muted">
+                        <i class="bi bi-journal-x fs-1 d-block mb-3 text-primary opacity-50"></i>
+                        <h5 class="fw-bold">No books found</h5>
+                        <p class="small">The bookstore will be restocked soon!</p>
+                    </div>`;
+                return;
+            }
+
+            grid.innerHTML = data.map(buildCard).join('');
+
+            // Bind cart buttons
+            grid.querySelectorAll('.btn-add-cart').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    addToCart({
+                        id:    btn.dataset.id,
+                        name:  btn.dataset.name,
+                        price: parseFloat(btn.dataset.price),
+                        qty:   1,
+                        img:   btn.dataset.img
+                    });
+                });
+            });
+
+        } catch (err) {
+            // Remove skeletons and show error
+            grid.innerHTML = '';
+            errEl.classList.remove('d-none');
+            msgEl.textContent = 'Could not load products: ' + err.message;
+        }
+    }
+
+    // ─── Init ─────────────────────────────────────────────────────────────
+    loadProducts();
     updateCartBadge();
     renderSidebarCart();
 </script>

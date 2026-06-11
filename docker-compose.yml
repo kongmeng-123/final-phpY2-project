@@ -1,5 +1,4 @@
 services:
-  # 1. PHP & Apache
   web:
     build: .
     container_name: final_php_web
@@ -10,7 +9,6 @@ services:
     depends_on:
       - db
 
-  # 2. MySQL Database
   db:
     image: mysql:8.0
     container_name: final_mysql_db
@@ -23,7 +21,6 @@ services:
     volumes:
       - db_data:/var/lib/mysql
 
-  # 3. phpMyAdmin (สำหรับจัดการ DB ผ่านเว็บ)
   phpmyadmin:
     image: phpmyadmin
     container_name: final_php_pma

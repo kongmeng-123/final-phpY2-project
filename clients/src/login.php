@@ -1,9 +1,15 @@
 <?php
-require_once __DIR__ . '/helpers.php';
+session_start();
+require_once __DIR__ . '/../../api/db_config.php';
+require_once __DIR__ . '/../../src/helpers.php';
 
 $errors = [];
 $email = '';
 $successMessage = '';
+
+if (isset($_GET['registered'])) {
+    $successMessage = 'Registration successful! Please sign in.';
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = getPostValue('email');
@@ -17,12 +23,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($password === '') {
         $errors['password'] = 'Password is required.';
-    } elseif (strlen($password) < 8) {
-        $errors['password'] = 'Password must be at least 8 characters.';
     }
 
     if (empty($errors)) {
-        $successMessage = 'Login successful. Replace this with real authentication logic.';
+        try {
+            $stmt = $pdo->prepare("SELECT * FROM users_tb WHERE email = :email");
+            $stmt->execute(['email' => $email]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($user && (password_verify($password, $user['password']) || $password === $user['password'])) {
+                // Set session variables
+                $_SESSION['user_id'] = $user['user_id'];
+                $_SESSION['user_fname'] = $user['Fname'];
+                $_SESSION['user_lname'] = $user['Lname'];
+                $_SESSION['user_email'] = $user['email'];
+
+                header("Location: index.php");
+                exit();
+            } else {
+                $errors['auth'] = 'Invalid email or password.';
+            }
+        } catch (PDOException $e) {
+            $errors['db'] = "Database error: " . $e->getMessage();
+        }
     }
 }
 ?>
@@ -104,6 +127,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if ($successMessage): ?>
                 <div class="alert alert-success rounded-3 mb-4" role="alert">
                     <?php echo $successMessage; ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if (isset($errors['auth'])): ?>
+                <div class="alert alert-danger rounded-3 mb-4" role="alert">
+                    <?php echo $errors['auth']; ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if (isset($errors['db'])): ?>
+                <div class="alert alert-danger rounded-3 mb-4" role="alert">
+                    <?php echo $errors['db']; ?>
                 </div>
             <?php endif; ?>
 

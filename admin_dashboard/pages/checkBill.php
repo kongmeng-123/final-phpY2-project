@@ -462,7 +462,8 @@
                 // 3. เตรียม Data ที่จะส่ง (ส่งฟิลด์ "status" ให้ตรงกับ $allowedFields ใน PHP)
                 const dataToSend = {
                     order_id: orderId, // อาจจะไม่จำเป็นต้องส่งก็ได้ถ้า URL มี orderId อยู่แล้ว ขึ้นอยู่กับการออกแบบ API ของคุณ
-                    bill_status: bill_status
+                    bill_status: bill_status,
+                    order_status: bill_status ==="fail" ? "fail": "rendering" 
                 };
 
                 // 4. ยิง API ด้วย fetch() แบบสั้นและคลีน

@@ -326,7 +326,7 @@
                                                 `).join('')
 
                     }
-                                                <span id ="remain">+ ${remain}</span>
+                                                <span id ="remain">${item.order_items.length > 2 ? `+ ${remain}` : ''}</span>
 
                                         </div>
                                     </td>

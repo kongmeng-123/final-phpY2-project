@@ -435,7 +435,7 @@ try {
                sendError("Order not found", 404);
             }
 
-            $allowedFields = ['product_name', 'product_img_src', 'product_price', 'amount_product', 'user_name', 'bill_status', 'bill_img_src', 'date_order', 'date_success', 'user_address', 'express_with'];
+            $allowedFields = ['product_name', 'product_img_src','order_status', 'product_price', 'amount_product', 'user_name', 'bill_status', 'bill_img_src', 'date_order', 'date_success', 'user_address', 'express_with'];
             $fieldsToUpdate = [];
             $params = [];
             foreach ($allowedFields as $field) {

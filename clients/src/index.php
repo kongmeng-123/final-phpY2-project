@@ -387,6 +387,8 @@ $userName = $isLoggedIn ? $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'
             return;
         }
 
+        // map pai min si
+
         container.innerHTML = cart.map(item => `
             <div class="cart-item-row">
                 <img class="cart-item-img"
@@ -426,7 +428,7 @@ $userName = $isLoggedIn ? $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'
 
     // ─── Build a single product card HTML string ──────────────────────────
     function buildCard(p) {
-        const imgSrc = `/admin_dashboard/img/${encodeURIComponent(p.image_src || '')}`;
+        const imgSrc = `../../admin_dashboard/img/${encodeURIComponent(p.image_src || '')}`;
         const pid    = 'p-' + p.id;
         const name   = escHtml(p.product_name || '');
         const price  = parseFloat(p.price).toFixed(2);
@@ -476,7 +478,7 @@ $userName = $isLoggedIn ? $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'
         const msgEl = document.getElementById('fetch-error-msg');
 
         try {
-            const res  = await fetch('/api/api.php/products');
+            const res  = await fetch('../../api/api.php/products');
             if (!res.ok) throw new Error(`Server returned ${res.status}`);
             const data = await res.json();
 

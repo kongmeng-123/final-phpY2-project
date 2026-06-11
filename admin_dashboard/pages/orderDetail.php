@@ -1,3 +1,24 @@
+<?php
+require_once "../../api/db_config.php";
+
+$orderId = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
+$order = null;
+
+if ($orderId > 0) {
+    try {
+        $stmt = $pdo->prepare("
+            SELECT o.*, u.Fname, u.Lname, u.email, u.phoneNumber 
+            FROM orders_tb o 
+            LEFT JOIN users_tb u ON o.user_id = u.user_id 
+            WHERE o.order_id = ?
+        ");
+        $stmt->execute([$orderId]);
+        $order = $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        $error = $e->getMessage();
+    }
+}
+?>
 <!doctype html>
 <html lang="en">
 
@@ -10,9 +31,9 @@
     <title>SB Admin 2 - Tables</title>
     <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" />
     <link
-        href="http://sfonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet" />
-    <link href="http://scdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" rel="stylesheet"
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" rel="stylesheet"
         crossorigin="anonymous"
         integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
         referrerpolicy="no-referrer" />
@@ -53,7 +74,7 @@
                 <div class="collapse" id="collapseOrder">
                     <div class="py-2 bg-white collapse-inner rounded">
                         <h6 class="collapse-header">Order detail :</h6>
-                        <a class="collapse-item active" href="..allOrder.php">All</a>
+                        <a class="collapse-item active" href="allOrder.php">All</a>
                         <a class="collapse-item" href="newOrder.php">New order</a>
                         <a class="collapse-item" href="checkOrder.php">Check order</a>
                     </div>
@@ -242,7 +263,7 @@
                                 </a>
                                 <a href="#" class="dropdown-item align-items-center d-flex">
                                     <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="http://ssource.unsplash.com/Mv9hjnEUHR4/60x60"
+                                        <img class="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60"
                                             alt="..." />
                                         <div class="status-indicator bg-success"></div>
                                     </div>
@@ -286,77 +307,84 @@
                     </ul>
                 </nav>
                 <div class="container-fluid">
-                    <h1 class="h3 mb-2 text-gray-800">Order detail of 0001</h1>
+                    <h1 class="h3 mb-2 text-gray-800">Order detail of <?php echo str_pad($orderId, 4, '0', STR_PAD_LEFT); ?></h1>
 
                     <div class="shadow mb-4 card">
-
                         <div class="card-body">
-                            <div class="table-responsive">
-                                <table cellspacing="0" class="table table-bordered" id="dataTable" width="100%">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Product Name</th>
-                                            <th>Product Image</th>
-                                            <th>Amount</th>
-                                            <th>Price</th>
-                                            <th>Total price</th>
+                            <?php if (!$order): ?>
+                                <div class="alert alert-warning">Order not found or invalid ID.</div>
+                            <?php else: 
+                                $items = json_decode($order['order_items'], true) ?: [];
+                                $totalPrice = 0;
+                            ?>
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <h5 class="font-weight-bold text-primary">Customer Information</h5>
+                                        <p class="mb-1"><strong>Name:</strong> <?php echo htmlspecialchars(($order['Fname'] ?? 'N/A') . ' ' . ($order['Lname'] ?? '')); ?></p>
+                                        <p class="mb-1"><strong>Email:</strong> <?php echo htmlspecialchars($order['email'] ?? 'N/A'); ?></p>
+                                        <p class="mb-1"><strong>Phone:</strong> <?php echo htmlspecialchars($order['phoneNumber'] ?? 'N/A'); ?></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h5 class="font-weight-bold text-primary">Shipping Information</h5>
+                                        <p class="mb-1"><strong>Address:</strong> <?php echo htmlspecialchars($order['express_address'] ?? 'N/A'); ?></p>
+                                        <p class="mb-1"><strong>Carrier:</strong> <?php echo htmlspecialchars($order['express_with'] ?? 'N/A'); ?></p>
+                                        <p class="mb-1"><strong>Date:</strong> <?php echo $order['date_order']; ?></p>
+                                        <p class="mb-1"><strong>Status:</strong> <span class="badge badge-info"><?php echo htmlspecialchars($order['order_status']); ?></span></p>
+                                    </div>
+                                </div>
 
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-                                        <tr>
-                                            <td><a href="#">01</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="../img/how to focus.jpg" alt="product image" height="60"
-                                                        width="50" />
-
-                                                </div>
-                                            </td>
-                                            <td>2</td>
-                                            <td>$ 15</td>
-                                            <td>$ 30</td>
-
-                                        </tr>
-
-                                        <tr>
-                                            <td><a href="#">01</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="../img/how to focus.jpg" alt="product image" height="60"
-                                                        width="50" />
-
-                                                </div>
-                                            </td>
-                                            <td>2</td>
-                                            <td>$ 15</td>
-                                            <td>$ 30</td>
-
-                                        </tr>
-
-                                        <tr>
-                                            <td><a href="#">01</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="../img/how to focus.jpg" alt="product image" height="60"
-                                                        width="50" />
-
-                                                </div>
-                                            </td>
-                                            <td>2</td>
-                                            <td>$ 15</td>
-                                            <td>$ 30</td>
-
-                                        </tr>
-
-                                    </tbody>
-                                </table>
-                            </div>
+                                <div class="table-responsive">
+                                    <table cellspacing="0" class="table table-bordered" id="dataTable" width="100%">
+                                        <thead>
+                                            <tr>
+                                                <th>Product Name</th>
+                                                <th>Image</th>
+                                                <th>Category</th>
+                                                <th>Amount</th>
+                                                <th>Price</th>
+                                                <th>Subtotal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($items as $item): 
+                                                $subtotal = $item['price'] * $item['amount'];
+                                                $totalPrice += $subtotal;
+                                            ?>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($item['product_name']); ?></td>
+                                                    <td>
+                                                        <img src="../img/<?php echo htmlspecialchars($item['image_src'] ?? 'product.jpg'); ?>" 
+                                                             alt="product image" height="60" width="50"
+                                                             onerror="this.src='https://placehold.co/50x60?text=Product'">
+                                                    </td>
+                                                    <td><?php echo htmlspecialchars($item['category'] ?? 'N/A'); ?></td>
+                                                    <td><?php echo $item['amount']; ?></td>
+                                                    <td>$ <?php echo number_format($item['price'], 2); ?></td>
+                                                    <td>$ <?php echo number_format($subtotal, 2); ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th colspan="5" class="text-right">Grand Total:</th>
+                                                <th class="text-primary font-weight-bold">$ <?php echo number_format($totalPrice, 2); ?></th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <?php if (!empty($order['bill_img_src'])): ?>
+                                    <div class="mt-4">
+                                        <h5 class="font-weight-bold text-primary">Payment Slip:</h5>
+                                        <div class="border rounded p-2 d-inline-block bg-light">
+                                            <a href="../img/<?php echo htmlspecialchars($order['bill_img_src']); ?>" target="_blank">
+                                                <img src="../img/<?php echo htmlspecialchars($order['bill_img_src']); ?>" 
+                                                    alt="Payment Slip" style="max-width: 400px; border: 1px solid #ddd;"
+                                                    onerror="this.style.display='none'">
+                                            </a>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

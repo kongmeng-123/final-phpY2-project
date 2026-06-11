@@ -55,30 +55,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception("Failed to save the uploaded receipt image.");
         }
 
-        // Save order(s) to Database
+        // Save order to Database using the correct schema
         $pdo->beginTransaction();
 
-        $stmt = $pdo->prepare("INSERT INTO orders_tb 
-            (product_name, product_img_src, product_price, amount_product, user_name, status, bill_img_src, user_address, express_with, date_order) 
-            VALUES (?, ?, ?, ?, ?, 'Pending', ?, ?, ?, NOW())");
-
+        $userId = $_SESSION['user_id'] ?? 0;
+        
+        // Prepare cart data for order_items JSON column
+        // We match the format seen in the database: [{"id": "...", "price": "...", "amount": "...", ...}]
+        $formattedItems = [];
         foreach ($cartItems as $item) {
-            // Normalize image path/name
-            $imgName = basename($item['img'] ?? 'product.jpg');
-            $price = intval($item['price']);
-            $qty = intval($item['qty']);
-
-            $stmt->execute([
-                $item['name'],
-                $imgName,
-                $price,
-                $qty,
-                $fullname,
-                $newFileName,
-                $address,
-                $express
-            ]);
+            $formattedItems[] = [
+                "id" => $item['id'],
+                "price" => $item['price'],
+                "amount" => $item['qty'],
+                "category" => $item['category'] ?? "Other",
+                "image_src" => basename($item['img'] ?? 'product.jpg'),
+                "product_name" => $item['name']
+            ];
         }
+        $orderItemsJson = json_encode($formattedItems);
+
+        $stmt = $pdo->prepare("INSERT INTO orders_tb 
+            (user_id, order_status, bill_img_src, express_address, express_with, date_order, order_items, bill_status) 
+            VALUES (?, 'Pending', ?, ?, ?, NOW(), ?, 'Pending')");
+
+        $stmt->execute([
+            $userId,
+            $newFileName,
+            $address,
+            $express,
+            $orderItemsJson
+        ]);
 
         $pdo->commit();
         $success = true;

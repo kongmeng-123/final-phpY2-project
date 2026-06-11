@@ -10,9 +10,9 @@
     <title>SB Admin 2 - Tables</title>
     <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" />
     <link
-        href="http://sfonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet" />
-    <link href="http://scdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" rel="stylesheet"
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" rel="stylesheet"
         crossorigin="anonymous"
         integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
         referrerpolicy="no-referrer" />
@@ -53,7 +53,7 @@
                 <div class="collapse" id="collapseOrder">
                     <div class="py-2 bg-white collapse-inner rounded">
                         <h6 class="collapse-header">Order detail :</h6>
-                        <a class="collapse-item" href="..allOrder.php">All</a>
+                        <a class="collapse-item" href="allOrder.php">All</a>
                         <a class="collapse-item" href="newOrder.php">New order</a>
                         <a class="collapse-item" href="checkOrder.php">Check order</a>
                     </div>
@@ -242,7 +242,7 @@
                                 </a>
                                 <a href="#" class="dropdown-item align-items-center d-flex">
                                     <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="http://ssource.unsplash.com/Mv9hjnEUHR4/60x60"
+                                        <img class="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60"
                                             alt="..." />
                                         <div class="status-indicator bg-success"></div>
                                     </div>

@@ -3,14 +3,27 @@ session_start();
 require_once __DIR__ . '/../../api/db_config.php';
 
 $isLoggedIn = isset($_SESSION['user_id']);
-$userName = $isLoggedIn ? $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'] : '';
+$userId = $isLoggedIn ? $_SESSION['user_id'] : 0;
+$userName = $isLoggedIn ? ($_SESSION['user_fname'] . ' ' . $_SESSION['user_lname']) : '';
 
 try {
-    // Fetch all orders sorted by date
-    $stmt = $pdo->prepare("SELECT * FROM orders_tb ORDER BY date_order DESC, order_id DESC");
-    $stmt->execute();
-    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
+    if (!isset($pdo)) {
+        throw new Exception("Database connection not established. Please check your db_config.php.");
+    }
+
+    if ($isLoggedIn) {
+        // Fetch orders ONLY for the logged-in user
+        $stmt = $pdo->prepare("
+            SELECT * FROM orders_tb 
+            WHERE user_id = ? 
+            ORDER BY date_order DESC
+        ");
+        $stmt->execute([$userId]);
+        $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        $orders = [];
+    }
+} catch (Throwable $e) {
     $orders = [];
     $error = $e->getMessage();
 }
@@ -178,66 +191,81 @@ try {
             </div>
         <?php else: ?>
             <div class="d-flex flex-column gap-4">
-                <?php foreach ($orders as $order): ?>
+                <?php foreach ($orders as $orderRaw): ?>
+                    <?php 
+                        // Normalize keys to lowercase to avoid case-sensitivity issues
+                        $order = array_change_key_case($orderRaw, CASE_LOWER);
+                    ?>
                     <div class="card order-card border-0">
                         <!-- Card Header -->
                         <div class="card-header bg-light border-0 py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
                             <div class="d-flex align-items-center gap-3">
-                                <span class="fw-bold font-outfit text-dark">Order #<?php echo str_pad($order['order_id'], 4, '0', STR_PAD_LEFT); ?></span>
-                                <span class="text-muted small"><i class="bi bi-clock me-1"></i><?php echo date('M d, Y h:i A', strtotime($order['date_order'])); ?></span>
+                                <span class="fw-bold font-outfit text-dark">Order #<?php echo str_pad($order['order_id'] ?? 0, 4, '0', STR_PAD_LEFT); ?></span>
+                                <span class="text-muted small"><i class="bi bi-clock me-1"></i><?php echo !empty($order['date_order']) ? date('M d, Y h:i A', strtotime($order['date_order'])) : 'N/A'; ?></span>
                             </div>
                             <div>
                                 <?php
-                                $status = strtolower($order['status'] ?? 'pending');
+                                $statusStr = strtolower($order['status'] ?? 'pending');
                                 $badgeClass = 'bg-warning text-dark';
-                                if ($status === 'success') {
+                                if ($statusStr === 'success') {
                                     $badgeClass = 'bg-success text-white';
-                                } elseif ($status === 'shipping') {
+                                } elseif ($statusStr === 'shipping') {
                                     $badgeClass = 'bg-info text-white';
-                                } elseif ($status === 'cancelled') {
+                                } elseif ($statusStr === 'cancelled') {
                                     $badgeClass = 'bg-danger text-white';
                                 }
                                 ?>
                                 <span class="badge rounded-pill <?php echo $badgeClass; ?> px-3 py-2 fw-semibold text-uppercase" style="font-size: 0.75rem;">
-                                    <?php echo htmlspecialchars($order['status']); ?>
+                                    <?php echo htmlspecialchars($statusStr); ?>
                                 </span>
                             </div>
                         </div>
 
                         <!-- Card Body -->
                         <div class="card-body p-4">
-                            <div class="row g-4 align-items-center">
+                            <?php 
+                                $items = json_decode($order['order_items'], true) ?: [];
+                                foreach ($items as $item):
+                            ?>
+                            <div class="row g-4 align-items-center mb-3 pb-3 border-bottom last-child-no-border">
                                 <!-- Image -->
                                 <div class="col-auto">
                                     <div class="product-img-wrapper">
                                         <?php
                                         // Product image path checking inside admin img folder
-                                        $imgName = $order['product_img_src'];
+                                        $imgName = $item['image_src'] ?? 'product.jpg';
                                         $imgPath = '../../admin_dashboard/img/' . $imgName;
                                         ?>
-                                        <img src="<?php echo htmlspecialchars($imgPath); ?>" alt="<?php echo htmlspecialchars($order['product_name']); ?>" onerror="this.src='https://placehold.co/80x110/6366f1/ffffff?text=Book'">
+                                        <img src="<?php echo htmlspecialchars($imgPath); ?>" alt="<?php echo htmlspecialchars($item['product_name'] ?? 'Product'); ?>" onerror="this.src='https://placehold.co/80x110/6366f1/ffffff?text=Book'">
                                     </div>
                                 </div>
 
                                 <!-- Description -->
                                 <div class="col">
-                                    <h5 class="fw-bold text-dark mb-2"><?php echo htmlspecialchars($order['product_name']); ?></h5>
-                                    <p class="text-muted small mb-1">Price: <span class="text-dark fw-semibold">₭<?php echo number_format($order['product_price'], 2); ?></span></p>
-                                    <p class="text-muted small mb-0">Quantity: <span class="text-dark fw-semibold"><?php echo intval($order['amount_product']); ?></span></p>
+                                    <h5 class="fw-bold text-dark mb-1"><?php echo htmlspecialchars($item['product_name'] ?? 'Unknown Product'); ?></h5>
+                                    <?php if (!empty($item['category'])): ?>
+                                        <span class="badge bg-light text-muted border mb-2" style="font-size: 0.7rem;"><?php echo htmlspecialchars($item['category']); ?></span>
+                                    <?php endif; ?>
+                                    <p class="text-muted small mb-1">Price: <span class="text-dark fw-semibold">$<?php echo number_format(floatval($item['price'] ?? 0), 2); ?></span></p>
+                                    <p class="text-muted small mb-0">Quantity: <span class="text-dark fw-semibold"><?php echo intval($item['amount'] ?? 0); ?></span></p>
                                 </div>
 
-                                <!-- Shipping info -->
+                                <!-- Shipping info (only show for first item to avoid repetition) -->
+                                <?php if ($item === reset($items)): ?>
                                 <div class="col-md-4 border-start ps-md-4">
-                                    <p class="mb-1 text-muted small"><i class="bi bi-person me-1"></i> <strong>Name:</strong> <?php echo htmlspecialchars($order['user_name']); ?></p>
                                     <p class="mb-1 text-muted small"><i class="bi bi-truck me-1"></i> <strong>Carrier:</strong> <?php echo htmlspecialchars($order['express_with'] ?? 'Not selected'); ?></p>
-                                    <p class="mb-0 text-muted small"><i class="bi bi-geo-alt me-1"></i> <strong>Address:</strong> <?php echo htmlspecialchars($order['user_address'] ?? 'Not provided'); ?></p>
+                                    <p class="mb-0 text-muted small"><i class="bi bi-geo-alt me-1"></i> <strong>Address:</strong> <?php echo htmlspecialchars($order['express_address'] ?? 'Not provided'); ?></p>
                                 </div>
 
                                 <!-- Price total & receipt upload -->
                                 <div class="col-md-2 text-md-end">
                                     <div class="mb-2">
+                                        <?php
+                                        $totalOrderPrice = 0;
+                                        foreach($items as $i) $totalOrderPrice += ($i['price'] * $i['amount']);
+                                        ?>
                                         <small class="text-muted d-block">Total Cost</small>
-                                        <span class="fw-bold fs-4 text-primary font-outfit">₭<?php echo number_format($order['product_price'] * $order['amount_product'], 2); ?></span>
+                                        <span class="fw-bold fs-4 text-primary font-outfit">$<?php echo number_format($totalOrderPrice, 2); ?></span>
                                     </div>
                                     <?php if (!empty($order['bill_img_src'])): ?>
                                         <a href="../../admin_dashboard/img/<?php echo htmlspecialchars($order['bill_img_src']); ?>" target="_blank" class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 small font-outfit">
@@ -245,7 +273,9 @@ try {
                                         </a>
                                     <?php endif; ?>
                                 </div>
+                                <?php endif; ?>
                             </div>
+                            <?php endforeach; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>

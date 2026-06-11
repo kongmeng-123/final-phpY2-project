@@ -1,3 +1,21 @@
+<?php
+require_once "../../api/db_config.php";
+
+try {
+    $stmt = $pdo->prepare("
+        SELECT o.*, u.Fname, u.Lname 
+        FROM orders_tb o 
+        LEFT JOIN users_tb u ON o.user_id = u.user_id 
+        WHERE o.order_status = 'Pending' 
+        ORDER BY o.date_order DESC
+    ");
+    $stmt->execute();
+    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $orders = [];
+    $error = $e->getMessage();
+}
+?>
 <!doctype html>
 <html lang="en">
 
@@ -10,9 +28,9 @@
     <title>SB Admin 2 - Tables</title>
     <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" />
     <link
-        href="http://sfonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet" />
-    <link href="http://scdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" rel="stylesheet"
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" rel="stylesheet"
         crossorigin="anonymous"
         integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
         referrerpolicy="no-referrer" />
@@ -50,7 +68,7 @@
                 <div class="collapse" id="collapseOrder">
                     <div class="py-2 bg-white collapse-inner rounded">
                         <h6 class="collapse-header">Order detail :</h6>
-                        <a class="collapse-item" href="..allOrder.php">All</a>
+                        <a class="collapse-item" href="allOrder.php">All</a>
                         <a class="collapse-item active" href="newOrder.php">New order</a>
                         <a class="collapse-item" href="checkOrder.php">Check order</a>
                     </div>
@@ -239,7 +257,7 @@
                                 </a>
                                 <a href="#" class="dropdown-item align-items-center d-flex">
                                     <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="http://ssource.unsplash.com/Mv9hjnEUHR4/60x60"
+                                        <img class="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60"
                                             alt="..." />
                                         <div class="status-indicator bg-success"></div>
                                     </div>
@@ -303,91 +321,54 @@
                                     </thead>
 
                                     <tbody>
-                                        <tr>
-                                            <td><a href="#" title="order detail">0001</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="https://cdn.gramedia.com/uploads/items/9786020333175_rich-dad-poor-dad-_edisi-revisi_.jpg"
-                                                        alt="product image" height="60" width="50">
-                                                </div>
-                                            </td>
-                                            <td>$ 30</td>
-                                            <td>2</td>
-                                            <td>kongmeng</td>
-                                            <td>
-                                                <a href="#" title="check bill">
-                                                    <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
-                                                        alt="bill" height="60" width="50">
-                                                </a>
-                                            </td>
-                                        </tr>
-
-
-                                        <tr>
-                                            <td><a href="#" title="order detail">0001</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="https://cdn.gramedia.com/uploads/items/9786020333175_rich-dad-poor-dad-_edisi-revisi_.jpg"
-                                                        alt="product image" height="60" width="50">
-                                                </div>
-                                            </td>
-                                            <td>$ 30</td>
-                                            <td>2</td>
-                                            <td>kongmeng</td>
-                                            <td>
-                                                <a href="#" title="check bill">
-                                                    <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
-                                                        alt="bill" height="60" width="50">
-                                                </a>
-                                            </td>
-                                        </tr>
-
-
-                                        <tr>
-                                            <td><a href="#" title="order detail">0001</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="https://cdn.gramedia.com/uploads/items/9786020333175_rich-dad-poor-dad-_edisi-revisi_.jpg"
-                                                        alt="product image" height="60" width="50">
-                                                </div>
-                                            </td>
-                                            <td>$ 30</td>
-                                            <td>2</td>
-                                            <td>kongmeng</td>
-                                            <td>
-                                                <a href="#" title="check bill">
-                                                    <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
-                                                        alt="bill" height="60" width="50">
-                                                </a>
-                                            </td>
-                                        </tr>
-
-
-                                        <tr>
-                                            <td><a href="#" title="order detail">0001</a></td>
-                                            <td>Rich dad poor dad</td>
-                                            <td>
-                                                <div>
-                                                    <img src="https://cdn.gramedia.com/uploads/items/9786020333175_rich-dad-poor-dad-_edisi-revisi_.jpg"
-                                                        alt="product image" height="60" width="50">
-                                                </div>
-                                            </td>
-                                            <td>$ 30</td>
-                                            <td>2</td>
-                                            <td>kongmeng</td>
-                                            <td>
-                                                <a href="#" title="check bill">
-                                                    <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
-                                                        alt="bill" height="60" width="50">
-                                                </a>
-                                            </td>
-                                        </tr>
-
-
-
+                                        <?php if (empty($orders)): ?>
+                                            <tr>
+                                                <td colspan="7" class="text-center">No new orders found</td>
+                                            </tr>
+                                        <?php else: ?>
+                                            <?php foreach ($orders as $order): 
+                                                $items = json_decode($order['order_items'], true) ?: [];
+                                                $firstItem = $items[0] ?? ['product_name' => 'N/A', 'image_src' => 'product.jpg', 'price' => 0, 'amount' => 0];
+                                                $totalPrice = 0;
+                                                $totalCount = 0;
+                                                foreach($items as $item) {
+                                                    $totalPrice += ($item['price'] * $item['amount']);
+                                                    $totalCount += $item['amount'];
+                                                }
+                                                $itemName = $firstItem['product_name'];
+                                                if (count($items) > 1) $itemName .= " ... (" . count($items) . " items)";
+                                            ?>
+                                                <tr>
+                                                    <td>
+                                                        <a href="orderDetail.php?order_id=<?php echo $order['order_id']; ?>" title="order detail">
+                                                            <?php echo str_pad($order['order_id'], 4, '0', STR_PAD_LEFT); ?>
+                                                        </a>
+                                                    </td>
+                                                    <td><?php echo htmlspecialchars($itemName); ?></td>
+                                                    <td>
+                                                        <div>
+                                                            <img src="../img/<?php echo htmlspecialchars($firstItem['image_src'] ?? 'product.jpg'); ?>" 
+                                                                 alt="product image" height="60" width="50"
+                                                                 onerror="this.src='https://placehold.co/50x60?text=Product'">
+                                                        </div>
+                                                    </td>
+                                                    <td>$ <?php echo number_format($totalPrice, 2); ?></td>
+                                                    <td><?php echo $totalCount; ?></td>
+                                                    <td><?php echo htmlspecialchars(($order['Fname'] ?? '') . ' ' . ($order['Lname'] ?? '')); ?></td>
+                                                    <td>
+                                                        <?php if (!empty($order['bill_img_src'])): ?>
+                                                            <a href="../img/<?php echo htmlspecialchars($order['bill_img_src']); ?>" target="_blank" title="check bill">
+                                                                <img src="../img/<?php echo htmlspecialchars($order['bill_img_src']); ?>"
+                                                                    alt="bill" height="60" width="50"
+                                                                    onerror="this.src='https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0'">
+                                                            </a>
+                                                        <?php else: ?>
+                                                            <span class="text-muted small">No Slip</span>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
                                     </tbody>
                                 </table>
                             </div>

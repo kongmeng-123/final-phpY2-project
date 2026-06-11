@@ -1,3 +1,65 @@
+<?php
+require_once "../../api/db_config.php";
+
+try {
+    $monthlyEarnings = 0;
+    $annualEarnings = 0;
+    $pendingOrders = 0;
+    $productSales = [];
+
+    $stmt = $pdo->query("SELECT order_items, date_order, order_status FROM orders_tb");
+    $allOrders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $currentMonth = date('m');
+    $currentYear = date('Y');
+
+    foreach ($allOrders as $order) {
+        $items = json_decode($order['order_items'], true) ?: [];
+        $orderDate = strtotime($order['date_order']);
+        $orderMonth = date('m', $orderDate);
+        $orderYear = date('Y', $orderDate);
+
+        if ($order['order_status'] === 'Pending') {
+            $pendingOrders++;
+        }
+
+        foreach ($items as $item) {
+            $subtotal = ($item['price'] ?? 0) * ($item['amount'] ?? 0);
+            
+            if ($orderYear == $currentYear) {
+                $annualEarnings += $subtotal;
+                if ($orderMonth == $currentMonth) {
+                    $monthlyEarnings += $subtotal;
+                }
+            }
+
+            // Track product sales
+            $name = $item['product_name'] ?? 'Unknown';
+            if (!isset($productSales[$name])) {
+                $productSales[$name] = [
+                    'name' => $name,
+                    'price' => $item['price'] ?? 0,
+                    'count' => 0,
+                    'image' => $item['image_src'] ?? 'product.jpg'
+                ];
+            }
+            $productSales[$name]['count'] += ($item['amount'] ?? 0);
+        }
+    }
+
+    // Sort and slice top products
+    uasort($productSales, function($a, $b) {
+        return $b['count'] <=> $a['count'];
+    });
+    $topProducts = array_slice($productSales, 0, 10);
+
+} catch (PDOException $e) {
+    $monthlyEarnings = 0;
+    $annualEarnings = 0;
+    $pendingOrders = 0;
+    $topProducts = [];
+}
+?>
 <!doctype html>
 <html lang="en">
 
@@ -10,9 +72,9 @@
     <title>SB Admin 2 - Dashboard</title>
     <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" />
     <link
-        href="http://sfonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet" />
-    <link href="http://scdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" rel="stylesheet"
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" rel="stylesheet"
         crossorigin="anonymous"
         integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
         referrerpolicy="no-referrer" />
@@ -49,7 +111,7 @@
                 <div class="collapse" id="collapseOrder">
                     <div class="py-2 bg-white collapse-inner rounded">
                         <h6 class="collapse-header">Order detail :</h6>
-                        <a class="collapse-item" href="..allOrder.php">All</a>
+                        <a class="collapse-item" href="allOrder.php">All</a>
                         <a class="collapse-item" href="newOrder.php">New order</a>
                         <a class="collapse-item" href="checkOrder.php">Check order</a>
                     </div>
@@ -236,7 +298,7 @@
                                 </a>
                                 <a class="dropdown-item align-items-center d-flex" href="#">
                                     <div class="mr-3 dropdown-list-image">
-                                        <img src="http://ssource.unsplash.com/Mv9hjnEUHR4/60x60" alt="..."
+                                        <img src="https://source.unsplash.com/Mv9hjnEUHR4/60x60" alt="..."
                                             class="rounded-circle" />
                                         <div class="status-indicator bg-success"></div>
                                     </div>
@@ -295,7 +357,7 @@
                                         <div class="mr-2 col">
                                             <div class="font-weight-bold mb-1 text-uppercase text-xs text-primary">
                                                 Earnings (Monthly)</div>
-                                            <div class="font-weight-bold h5 mb-0 text-gray-800">$40,000</div>
+                                            <div class="font-weight-bold h5 mb-0 text-gray-800">$<?php echo number_format($monthlyEarnings, 2); ?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-2x text-gray-300 fa-calendar"></i>
@@ -311,7 +373,7 @@
                                         <div class="mr-2 col">
                                             <div class="font-weight-bold mb-1 text-uppercase text-xs text-success">
                                                 Earnings (Annual)</div>
-                                            <div class="font-weight-bold h5 mb-0 text-gray-800">$215,000</div>
+                                            <div class="font-weight-bold h5 mb-0 text-gray-800">$<?php echo number_format($annualEarnings, 2); ?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-2x text-gray-300 fa-dollar-sign"></i>
@@ -329,13 +391,13 @@
                                             </div>
                                             <div class="align-items-center no-gutters row">
                                                 <div class="col-auto">
-                                                    <div class="font-weight-bold h5 mb-0 text-gray-800 mr-3">50%</div>
+                                                    <div class="font-weight-bold h5 mb-0 text-gray-800 mr-3">100%</div>
                                                 </div>
                                                 <div class="col">
                                                     <div class="mr-2 progress progress-sm">
                                                         <div class="bg-info progress-bar" role="progressbar"
-                                                            aria-valuemax="100" aria-valuemin="0" aria-valuenow="50"
-                                                            style="width: 50%"></div>
+                                                            aria-valuemax="100" aria-valuemin="0" aria-valuenow="100"
+                                                            style="width: 100%"></div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -353,8 +415,8 @@
                                     <div class="align-items-center no-gutters row">
                                         <div class="mr-2 col">
                                             <div class="font-weight-bold mb-1 text-uppercase text-xs text-warning">
-                                                Pending Requests</div>
-                                            <div class="font-weight-bold h5 mb-0 text-gray-800">18</div>
+                                                Pending Orders</div>
+                                            <div class="font-weight-bold h5 mb-0 text-gray-800"><?php echo $pendingOrders; ?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-2x text-gray-300 fa-comments"></i>
@@ -441,124 +503,31 @@
                         <table cellspacing="0" class="table table-bordered" id="dataTable" width="100%">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
                                     <th>Name</th>
                                     <th>Price</th>
-                                    <th>Category</th>
-                                    <th>Count</th>
+                                    <th>Sold Count</th>
                                     <th>Image</th>
-                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td><a href="#" title="product detail">0001</a></td>
-                                    <td>Rish dad poor dad</td>
-                                    <td>$15</td>
-                                    <td>how to</td>
-                                    <td>120</td>
-                                    <td>
-                                        <img src="https://cdn.gramedia.com/uploads/items/9786020333175_rich-dad-poor-dad-_edisi-revisi_.jpg"
-                                            alt="image book" height="70" width="50" />
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <button class="btn text-white bg-warning">edit</button>
-                                            <button class="btn badge-danger">del</button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td><a href="#" title="product detail">0001</a></td>
-                                    <td>Rish dad poor dad</td>
-                                    <td>$15</td>
-                                    <td>how to</td>
-                                    <td>120</td>
-                                    <td>
-                                        <img src="https://cdn.gramedia.com/uploads/items/9786020333175_rich-dad-poor-dad-_edisi-revisi_.jpg"
-                                            alt="image book" height="70" width="50" />
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <button class="btn text-white bg-warning">edit</button>
-                                            <button class="btn badge-danger">del</button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td><a href="#" title="product detail">0001</a></td>
-                                    <td>Rish dad poor dad</td>
-                                    <td>$15</td>
-                                    <td>how to</td>
-                                    <td>120</td>
-                                    <td>
-                                        <img src="https://cdn.gramedia.com/uploads/items/9786020333175_rich-dad-poor-dad-_edisi-revisi_.jpg"
-                                            alt="image book" height="70" width="50" />
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <button class="btn text-white bg-warning">edit</button>
-                                            <button class="btn badge-danger">del</button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td><a href="#" title="product detail">0001</a></td>
-                                    <td>Rish dad poor dad</td>
-                                    <td>$15</td>
-                                    <td>how to</td>
-                                    <td>120</td>
-                                    <td>
-                                        <img src="https://cdn.gramedia.com/uploads/items/9786020333175_rich-dad-poor-dad-_edisi-revisi_.jpg"
-                                            alt="image book" height="70" width="50" />
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <button class="btn text-white bg-warning">edit</button>
-                                            <button class="btn badge-danger">del</button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td><a href="#" title="product detail">0001</a></td>
-                                    <td>Rish dad poor dad</td>
-                                    <td>$15</td>
-                                    <td>how to</td>
-                                    <td>120</td>
-                                    <td>
-                                        <img src="https://cdn.gramedia.com/uploads/items/9786020333175_rich-dad-poor-dad-_edisi-revisi_.jpg"
-                                            alt="image book" height="70" width="50" />
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <button class="btn text-white bg-warning">edit</button>
-                                            <button class="btn badge-danger">del</button>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td><a href="#" title="product detail">0001</a></td>
-                                    <td>Rish dad poor dad</td>
-                                    <td>$15</td>
-                                    <td>how to</td>
-                                    <td>120</td>
-                                    <td>
-                                        <img src="https://cdn.gramedia.com/uploads/items/9786020333175_rich-dad-poor-dad-_edisi-revisi_.jpg"
-                                            alt="image book" height="70" width="50" />
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <button class="btn text-white bg-warning">edit</button>
-                                            <button class="btn badge-danger">del</button>
-                                        </div>
-                                    </td>
-                                </tr>
-
+                                <?php if (empty($topProducts)): ?>
+                                    <tr>
+                                        <td colspan="4" class="text-center">No sales data yet</td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($topProducts as $product): ?>
+                                        <tr>
+                                            <td><?php echo htmlspecialchars($product['name']); ?></td>
+                                            <td>$<?php echo number_format($product['price'], 2); ?></td>
+                                            <td><?php echo $product['count']; ?></td>
+                                            <td>
+                                                <img src="../img/<?php echo htmlspecialchars($product['image'] ?? 'product.jpg'); ?>" 
+                                                     alt="image book" height="70" width="50"
+                                                     onerror="this.src='https://placehold.co/50x70?text=Product'" />
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>

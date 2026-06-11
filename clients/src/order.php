@@ -1,308 +1,181 @@
 <?php
 session_start();
-require_once __DIR__ . '/../../api/db_config.php';
-
-$isLoggedIn = isset($_SESSION['user_id']);
-$userId = $isLoggedIn ? $_SESSION['user_id'] : 0;
-$userName = $isLoggedIn ? ($_SESSION['user_fname'] . ' ' . $_SESSION['user_lname']) : '';
-
-try {
-    if (!isset($pdo)) {
-        throw new Exception("Database connection not established. Please check your db_config.php.");
-    }
-
-    if ($isLoggedIn) {
-        // Fetch orders ONLY for the logged-in user
-        $stmt = $pdo->prepare("
-            SELECT * FROM orders_tb 
-            WHERE user_id = ? 
-            ORDER BY date_order DESC
-        ");
-        $stmt->execute([$userId]);
-        $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } else {
-        $orders = [];
-    }
-} catch (Throwable $e) {
-    $orders = [];
-    $error = $e->getMessage();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
 }
+$userId = $_SESSION['user_id'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order History - E-book Shop</title>
-    <!-- Bootstrap 5.3 -->
+    <title>My Orders - E-book Shop</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts: Inter & Outfit -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
-    <!-- Bootstrap Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
     <style>
-        :root {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --bg-soft: #f8fafc;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --glass: rgba(255, 255, 255, 0.8);
-        }
-
-        body {
-            background-color: var(--bg-soft);
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-        }
-
-        h1, h2, h3, h4, h5, .fw-outfit {
-            font-family: 'Outfit', sans-serif;
-        }
-
-        .navbar {
-            background: var(--glass) !important;
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            padding: 1rem 0;
-        }
-
-        .order-card {
-            background: #fff;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            border-radius: 20px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-        }
-
-        .order-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-        }
-
-        .product-img-wrapper {
-            width: 80px;
-            height: 110px;
-            background: #f1f5f9;
-            border-radius: 12px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #e2e8f0;
-        }
-
-        .product-img-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .empty-state {
-            padding: 5rem 0;
-            text-align: center;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .card { border-radius: 15px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .badge-pending { background-color: #fef3c7; color: #92400e; } /* Yellow */
+        .badge-verified { background-color: #dbeafe; color: #1e40af; } /* Blue */
+        .badge-preparing { background-color: #ffedd5; color: #9a3412; } /* Orange */
+        .badge-shipping { background-color: #f3e8ff; color: #6b21a8; } /* Purple */
+        .badge-delivered { background-color: #dcfce7; color: #166534; } /* Green */
+        .badge-cancelled { background-color: #fee2e2; color: #991b1b; } /* Red */
     </style>
 </head>
-
 <body>
 
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
-        <div class="container">
-            <!-- Brand Logo -->
-            <a class="navbar-brand fw-bold text-primary fs-3" href="index.php">
-                E-book
-            </a>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="index.php">E-book Shop</a>
+        <div class="ms-auto">
+            <a href="logout.php" class="btn btn-outline-light btn-sm">Logout</a>
+        </div>
+    </div>
+</nav>
 
-            <!-- Mobile Toggle Button -->
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
-                aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+<div class="container py-4">
+    <h2 class="fw-bold mb-4">My Order History</h2>
 
-            <!-- Navbar Links and Actions -->
-            <div class="collapse navbar-collapse" id="navbarMain">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.php">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="Product.php">Products</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active fw-bold text-primary" href="order.php">Order</a>
-                    </li>
-                </ul>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Order ID</th>
+                            <th>Date</th>
+                            <th>Total Price</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderTableBody">
+                        <!-- Loaded by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
-                <!-- Actions -->
-                <div class="d-flex gap-2 align-items-center">
-                    <?php if ($isLoggedIn): ?>
-                        <div class="dropdown">
-                            <button class="btn btn-outline-primary rounded-pill px-3 dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle me-1"></i> <?php echo htmlspecialchars($userName); ?>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 mt-2" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item py-2 text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
-                            </ul>
-                        </div>
-                    <?php else: ?>
-                        <button class="btn btn-outline-primary rounded-pill px-3" type="button" onclick="location.href='signup.php'">Sign Up</button>
-                        <button class="btn btn-primary rounded-pill px-3" type="button" onclick="location.href='login.php'">Login</button>
-                    <?php endif; ?>
-                    <button class="btn btn-primary rounded-pill px-3 position-relative" type="button" onclick="location.href='Cart.php'">
-                        <i class="bi bi-cart3 me-1"></i> Cart
-                        <span id="cart-count-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">0</span>
-                    </button>
+<!-- Order Detail Modal -->
+<div class="modal fade" id="orderModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="border-radius: 20px;">
+            <div class="modal-header border-0 p-4">
+                <h5 class="modal-title fw-bold">Order Details #<span id="modalOrderId"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 pt-0">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-muted small text-uppercase">Shipping Information</h6>
+                        <p class="mb-1" id="modalAddress"></p>
+                        <p class="mb-1 text-primary fw-bold" id="modalExpress"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-muted small text-uppercase">Payment Method</h6>
+                        <p class="mb-1" id="modalBank"></p>
+                        <span id="modalStatusBadge" class="badge"></span>
+                    </div>
+                    <div class="col-12">
+                        <h6 class="fw-bold text-muted small text-uppercase mb-3">Items Ordered</h6>
+                        <div id="modalItems"></div>
+                    </div>
+                    <div class="col-12 text-center mt-4">
+                        <h6 class="fw-bold text-muted small text-uppercase mb-2">Payment Receipt</h6>
+                        <img id="modalSlip" src="" class="img-fluid rounded-3 border" style="max-height: 300px;">
+                    </div>
                 </div>
             </div>
         </div>
-    </nav>
+    </div>
+</div>
 
-    <main class="container my-5" style="max-width: 960px;">
-        <div class="d-flex justify-content-between align-items-end mb-4">
-            <div>
-                <h1 class="display-6 fw-bold mb-1">Your Orders</h1>
-                <p class="text-muted mb-0">Track status and review your purchase history</p>
-            </div>
-            <button class="btn btn-light border rounded-pill px-3 py-1.5 text-muted small" onclick="location.reload()">
-                <i class="bi bi-arrow-clockwise me-1"></i> Refresh
-            </button>
-        </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const userId = <?php echo $userId; ?>;
 
-        <?php if (isset($error)): ?>
-            <div class="alert alert-danger rounded-4 p-3 mb-4" role="alert">
-                <i class="bi bi-exclamation-triangle me-2"></i>
-                Failed to load orders: <?php echo htmlspecialchars($error); ?>
-            </div>
-        <?php endif; ?>
+async function loadOrders() {
+    try {
+        const response = await fetch(`../../api/api.php/orders?user_id=${userId}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            const tableBody = document.getElementById('orderTableBody');
+            tableBody.innerHTML = '';
 
-        <?php if (empty($orders)): ?>
-            <div class="empty-state card border-0 shadow-sm rounded-4 p-5">
-                <i class="bi bi-journal-x fs-1 text-muted mb-3 d-block"></i>
-                <h4 class="fw-bold">No orders found</h4>
-                <p class="text-muted mb-4">Looks like you haven't ordered anything yet.</p>
-                <button class="btn btn-primary rounded-pill px-4 py-2" onclick="location.href='Product.php'">
-                    Start Shopping
-                </button>
-            </div>
-        <?php else: ?>
-            <div class="d-flex flex-column gap-4">
-                <?php foreach ($orders as $orderRaw): ?>
-                    <?php 
-                        // Normalize keys to lowercase to avoid case-sensitivity issues
-                        $order = array_change_key_case($orderRaw, CASE_LOWER);
-                    ?>
-                    <div class="card order-card border-0">
-                        <!-- Card Header -->
-                        <div class="card-header bg-light border-0 py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
-                            <div class="d-flex align-items-center gap-3">
-                                <span class="fw-bold font-outfit text-dark">Order #<?php echo str_pad($order['order_id'] ?? 0, 4, '0', STR_PAD_LEFT); ?></span>
-                                <span class="text-muted small"><i class="bi bi-clock me-1"></i><?php echo !empty($order['date_order']) ? date('M d, Y h:i A', strtotime($order['date_order'])) : 'N/A'; ?></span>
-                            </div>
-                            <div>
-                                <?php
-                                $statusStr = strtolower($order['status'] ?? 'pending');
-                                $badgeClass = 'bg-warning text-dark';
-                                if ($statusStr === 'success') {
-                                    $badgeClass = 'bg-success text-white';
-                                } elseif ($statusStr === 'shipping') {
-                                    $badgeClass = 'bg-info text-white';
-                                } elseif ($statusStr === 'cancelled') {
-                                    $badgeClass = 'bg-danger text-white';
-                                }
-                                ?>
-                                <span class="badge rounded-pill <?php echo $badgeClass; ?> px-3 py-2 fw-semibold text-uppercase" style="font-size: 0.75rem;">
-                                    <?php echo htmlspecialchars($statusStr); ?>
-                                </span>
-                            </div>
-                        </div>
+            result.data.forEach(order => {
+                tableBody.innerHTML += `
+                    <tr>
+                        <td class="ps-4 fw-bold">#${order.id}</td>
+                        <td class="text-muted">${new Date(order.created_at).toLocaleDateString()}</td>
+                        <td class="fw-bold">${parseFloat(order.total_price).toLocaleString()} LAK</td>
+                        <td>${getStatusBadge(order.status)}</td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="viewOrder(${order.id})">View</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+    } catch (error) {
+        console.error('Failed to load orders', error);
+    }
+}
 
-                        <!-- Card Body -->
-                        <div class="card-body p-4">
-                            <?php 
-                                $items = json_decode($order['order_items'], true) ?: [];
-                                foreach ($items as $item):
-                            ?>
-                            <div class="row g-4 align-items-center mb-3 pb-3 border-bottom last-child-no-border">
-                                <!-- Image -->
-                                <div class="col-auto">
-                                    <div class="product-img-wrapper">
-                                        <?php
-                                        // Product image path checking inside admin img folder
-                                        $imgName = $item['image_src'] ?? 'product.jpg';
-                                        $imgPath = '../../admin_dashboard/img/' . $imgName;
-                                        ?>
-                                        <img src="<?php echo htmlspecialchars($imgPath); ?>" alt="<?php echo htmlspecialchars($item['product_name'] ?? 'Product'); ?>" onerror="this.src='https://placehold.co/80x110/6366f1/ffffff?text=Book'">
-                                    </div>
-                                </div>
+function getStatusBadge(status) {
+    let cls = '';
+    switch(status) {
+        case 'Pending Payment': cls = 'badge-pending'; break;
+        case 'Payment Verified': cls = 'badge-verified'; break;
+        case 'Preparing Order': cls = 'badge-preparing'; break;
+        case 'Shipping': cls = 'badge-shipping'; break;
+        case 'Delivered': cls = 'badge-delivered'; break;
+        case 'Cancelled': cls = 'badge-cancelled'; break;
+        default: cls = 'bg-secondary';
+    }
+    return `<span class="badge ${cls} rounded-pill px-3">${status}</span>`;
+}
 
-                                <!-- Description -->
-                                <div class="col">
-                                    <h5 class="fw-bold text-dark mb-1"><?php echo htmlspecialchars($item['product_name'] ?? 'Unknown Product'); ?></h5>
-                                    <?php if (!empty($item['category'])): ?>
-                                        <span class="badge bg-light text-muted border mb-2" style="font-size: 0.7rem;"><?php echo htmlspecialchars($item['category']); ?></span>
-                                    <?php endif; ?>
-                                    <p class="text-muted small mb-1">Price: <span class="text-dark fw-semibold">$<?php echo number_format(floatval($item['price'] ?? 0), 2); ?></span></p>
-                                    <p class="text-muted small mb-0">Quantity: <span class="text-dark fw-semibold"><?php echo intval($item['amount'] ?? 0); ?></span></p>
-                                </div>
-
-                                <!-- Shipping info (only show for first item to avoid repetition) -->
-                                <?php if ($item === reset($items)): ?>
-                                <div class="col-md-4 border-start ps-md-4">
-                                    <p class="mb-1 text-muted small"><i class="bi bi-truck me-1"></i> <strong>Carrier:</strong> <?php echo htmlspecialchars($order['express_with'] ?? 'Not selected'); ?></p>
-                                    <p class="mb-0 text-muted small"><i class="bi bi-geo-alt me-1"></i> <strong>Address:</strong> <?php echo htmlspecialchars($order['express_address'] ?? 'Not provided'); ?></p>
-                                </div>
-
-                                <!-- Price total & receipt upload -->
-                                <div class="col-md-2 text-md-end">
-                                    <div class="mb-2">
-                                        <?php
-                                        $totalOrderPrice = 0;
-                                        foreach($items as $i) $totalOrderPrice += ($i['price'] * $i['amount']);
-                                        ?>
-                                        <small class="text-muted d-block">Total Cost</small>
-                                        <span class="fw-bold fs-4 text-primary font-outfit">$<?php echo number_format($totalOrderPrice, 2); ?></span>
-                                    </div>
-                                    <?php if (!empty($order['bill_img_src'])): ?>
-                                        <a href="../../admin_dashboard/img/<?php echo htmlspecialchars($order['bill_img_src']); ?>" target="_blank" class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 small font-outfit">
-                                            <i class="bi bi-receipt me-1"></i> View Slip
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                            <?php endforeach; ?>
-                        </div>
+async function viewOrder(orderId) {
+    const response = await fetch(`../../api/api.php/orders/${orderId}`);
+    const result = await response.json();
+    
+    if (result.success) {
+        const order = result.data;
+        document.getElementById('modalOrderId').innerText = order.id;
+        document.getElementById('modalAddress').innerText = order.shipping_address;
+        document.getElementById('modalExpress').innerText = order.express_name || 'Standard Shipping';
+        document.getElementById('modalBank').innerText = order.payment_name || 'Bank Transfer';
+        document.getElementById('modalStatusBadge').outerHTML = getStatusBadge(order.status);
+        document.getElementById('modalSlip').src = `../../admin_dashboard/img/${order.payment_slip}`;
+        
+        let itemsHtml = '<ul class="list-group list-group-flush">';
+        order.items.forEach(item => {
+            itemsHtml += `
+                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <div>
+                        <div class="fw-bold">${item.name}</div>
+                        <div class="small text-muted">Qty: ${item.quantity} x ${parseFloat(item.price_at_purchase).toLocaleString()} LAK</div>
                     </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-    </main>
+                    <div class="fw-bold">${(item.quantity * item.price_at_purchase).toLocaleString()} LAK</div>
+                </li>
+            `;
+        });
+        itemsHtml += '</ul>';
+        document.getElementById('modalItems').innerHTML = itemsHtml;
 
-    <!-- Script to maintain navbar Cart badge -->
-    <script>
-        const CART_KEY = 'nuol_cart';
+        new bootstrap.Modal(document.getElementById('orderModal')).show();
+    }
+}
 
-        function getCart() {
-            return JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-        }
-
-        function updateCartCount() {
-            const cart = getCart();
-            const count = cart.reduce((sum, item) => sum + item.qty, 0);
-            const badge = document.getElementById('cart-count-badge');
-            if (badge) {
-                badge.textContent = count;
-                badge.style.display = count > 0 ? 'inline-block' : 'none';
-            }
-        }
-
-        window.onload = updateCartCount;
-    </script>
+loadOrders();
+</script>
 </body>
-
 </html>

@@ -1,557 +1,173 @@
 <?php
 /**
- * Professional REST API Gateway
- * Final PHP Year 2 Project
+ * Professional REST API Gateway - Final Total Fix Version
  */
 
-require_once "db_config.php";
-
-// Set core API response headers
+// 1. Core Error & Response Setup
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Hide HTML errors
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+header("Access-Control-Allow-Headers: Content-Type");
 
-$method = $_SERVER['REQUEST_METHOD'];
-
-// Handle CORS preflight OPTIONS request
-if ($method === "OPTIONS") {
-    http_response_code(200);
-    exit();
-}
-
-/**
- * Sends a standard API success response and terminates execution.
- *
- * @param mixed $data The body data to send
- * @param int $statusCode The HTTP status code (Default: 200)
- */
-function sendResponse($data, $statusCode = 200) {
-    http_response_code($statusCode);
-    echo json_encode($data);
-    exit();
-}
-
-/**
- * Sends a standard API error response and terminates execution.
- *
- * @param string $message The descriptive error message
- * @param int $statusCode The HTTP status code (Default: 400)
- */
 function sendError($message, $statusCode = 400) {
     http_response_code($statusCode);
-    echo json_encode(["error" => $message]);
+    echo json_encode(["success" => false, "error" => $message]);
+    exit();
+}
+
+function sendResponse($data, $message = "Success", $statusCode = 200) {
+    http_response_code($statusCode);
+    echo json_encode(["success" => true, "message" => $message, "data" => $data]);
     exit();
 }
 
 try {
-    // Route resolution: Extract resource and optional ID from path parameters
-    $path = isset($_SERVER['PATH_INFO']) ? trim($_SERVER['PATH_INFO'], '/') : '';
-    $segments = explode('/', $path);
-    $resource = $segments[0] ?? '';
-    $id = isset($segments[1]) && $segments[1] !== '' ? (int)$segments[1] : null;
+    // 2. Database Connection
+    if (!file_exists("db_config.php")) throw new Exception("db_config.php not found.");
+    require_once "db_config.php";
+    if (!isset($pdo)) throw new Exception("PDO connection failed.");
 
-    // Retrieve and parse raw JSON input payload
-    $input = json_decode(file_get_contents('php://input'), true) ?? [];
+    // Handle OPTIONS
+    if ($_SERVER['REQUEST_METHOD'] === "OPTIONS") exit();
 
+    // 3. Robust Routing (Supports PATH_INFO and ?r=resource fallback)
+    $resource = '';
+    $id = null;
+
+    if (isset($_SERVER['PATH_INFO'])) {
+        $path = trim($_SERVER['PATH_INFO'], '/');
+        $segments = explode('/', $path);
+        $resource = $segments[0] ?? '';
+        $id = isset($segments[1]) ? (int)$segments[1] : null;
+    } elseif (isset($_GET['r'])) {
+        $resource = $_GET['r'];
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
+    }
+
+    if (empty($resource)) {
+        // Check if user is trying to hit root
+        sendResponse(["status" => "online"], "G-Book API is online. Use /debug to test.");
+    }
+
+    // --- DEBUG ---
+    if ($resource === "debug") {
+        $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+        sendResponse([
+            "php_version" => PHP_VERSION,
+            "db_connected" => true,
+            "tables" => $tables,
+            "server" => $_SERVER['SERVER_SOFTWARE']
+        ]);
+    }
+
+    // --- MAIN RESOURCES ---
     switch ($resource) {
         
-        // ==========================================
-        // 🔐 AUTHENTICATION ENDPOINTS
-        // ==========================================
-
-        case "register":
-            if ($method !== "POST") {
-                sendError("Method not allowed", 405);
+        case "products":
+            if ($_SERVER['REQUEST_METHOD'] === "GET") {
+                if ($id) {
+                    $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
+                    $stmt->execute([$id]);
+                    $res = $stmt->fetch();
+                    $res ? sendResponse($res) : sendError("Not found", 404);
+                } else {
+                    $stmt = $pdo->query("SELECT * FROM products ORDER BY id DESC");
+                    sendResponse($stmt->fetchAll());
+                }
             }
+            break;
 
-            $email = isset($input['email']) ? trim($input['email']) : '';
-            $password = $input['password'] ?? '';
-
-            if (empty($email) || empty($password)) {
-                sendError("Email and Password are required", 400);
+        case "users":
+            if ($_SERVER['REQUEST_METHOD'] === "GET") {
+                $stmt = $pdo->query("SELECT id, fullname, email, phone, gender, role, created_at FROM users ORDER BY id DESC");
+                sendResponse($stmt->fetchAll());
             }
-
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                sendError("Invalid email format", 400);
-            }
-
-            if (strlen($password) < 6) {
-                sendError("Password must be at least 6 characters long", 400);
-            }
-
-            // Extract names - support both standard separate fields and a unified 'username'
-            $fname = '';
-            $lname = '';
-            if (!empty($input['username'])) {
-                $parts = explode(' ', trim($input['username']), 2);
-                $fname = $parts[0];
-                $lname = $parts[1] ?? '';
-            } else {
-                $fname = isset($input['Fname']) ? trim($input['Fname']) : '';
-                $lname = isset($input['Lname']) ? trim($input['Lname']) : '';
-            }
-
-            if (empty($fname)) {
-                sendError("First name or Username is required", 400);
-            }
-
-            $gender = $input['gender'] ?? 'Unspecified';
-            $phoneNumber = $input['phoneNumber'] ?? null;
-
-            // Check if email already exists in users table
-            $checkEmail = $pdo->prepare("SELECT user_id FROM users_tb WHERE email = :email");
-            $checkEmail->execute(['email' => $email]);
-            if ($checkEmail->fetch()) {
-                sendError("Email is already registered", 409);
-            }
-
-            // Securely hash the password before saving
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-            $stmt = $pdo->prepare("INSERT INTO users_tb (Fname, Lname, gender, email, password, phoneNumber) VALUES (:Fname, :Lname, :gender, :email, :password, :phoneNumber)");
-            $stmt->execute([
-                'Fname'       => $fname,
-                'Lname'       => $lname,
-                'gender'      => $gender,
-                'email'       => $email,
-                'password'    => $hashedPassword,
-                'phoneNumber' => $phoneNumber
-            ]);
-
-            $newUserId = $pdo->lastInsertId();
-            sendResponse([
-                "message" => "User registered successfully",
-                "user_id" => $newUserId
-            ], 201);
             break;
 
         case "login":
-            if ($method !== "POST") {
-                sendError("Method not allowed", 405);
+            $input = json_decode(file_get_contents('php://input'), true);
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+            $stmt->execute([$input['email'] ?? '']);
+            $user = $stmt->fetch();
+            if ($user && password_verify($input['password'] ?? '', $user['password'])) {
+                unset($user['password']);
+                sendResponse($user, "Login successful");
             }
-
-            $email = isset($input['email']) ? trim($input['email']) : '';
-            $password = $input['password'] ?? '';
-
-            if (empty($email) || empty($password)) {
-                sendError("Email and Password are required", 400);
-            }
-
-            // Fetch user record
-            $stmt = $pdo->prepare("SELECT * FROM users_tb WHERE email = :email");
-            $stmt->execute(['email' => $email]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if (!$user) {
-                sendError("Invalid email or password", 401);
-            }
-
-            // Check credentials: Supports secure hashed check and plaintext check for seed data
-            $isPasswordCorrect = password_verify($password, $user['password']) || ($password === $user['password']);
-
-            if (!$isPasswordCorrect) {
-                sendError("Invalid email or password", 401);
-            }
-
-            // Remove sensitive password hash from client response
-            unset($user['password']);
-
-            sendResponse([
-                "message" => "Login successful",
-                "user"    => $user
-            ]);
+            sendError("Invalid credentials", 401);
             break;
 
-        // ==========================================
-        // 📚 PRODUCTS RESOURCE
-        // ==========================================
-
-        case "products":
-            if ($method === "GET") {
-                if ($id) {
-                    $stmt = $pdo->prepare("SELECT * FROM products_tb WHERE id = :id");
-                    $stmt->execute(['id' => $id]);
-                    $product = $stmt->fetch(PDO::FETCH_ASSOC);
-                    if ($product) {
-                        sendResponse($product);
-                    } else {
-                        sendError("Product not found", 404);
-                    }
-                } else {
-                    $stmt = $pdo->prepare("SELECT * FROM products_tb");
-                    $stmt->execute();
-                    $product_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    sendResponse($product_data);
-                }
-            } elseif ($method === "POST") {
-                if (empty($input['product_name']) || !isset($input['price'])) {
-                    sendError("Missing required fields: product_name, price", 400);
-                }
-                $stmt = $pdo->prepare("INSERT INTO products_tb (product_name, price, category, count, image_src) VALUES (:product_name, :price, :category, :count, :image_src)");
-                $stmt->execute([
-                    'product_name' => $input['product_name'],
-                    'price'        => $input['price'],
-                    'category'     => $input['category'] ?? null,
-                    'count'        => $input['count'] ?? 0,
-                    'image_src'    => $input['image_src'] ?? null
-                ]);
-                $newId = $pdo->lastInsertId();
-                sendResponse(["message" => "Product created successfully", "id" => $newId], 201);
-
-            } elseif ($method === "PATCH") {
-                if (!$id) {
-                    sendError("Product ID is required for update", 400);
-                }
-                // Verify existence
-                $check = $pdo->prepare("SELECT id FROM products_tb WHERE id = :id");
-                $check->execute(['id' => $id]);
-                if (!$check->fetch()) {
-                    sendError("Product not found", 404);
-                }
-
-                $allowedFields = ['product_name', 'price', 'category', 'count', 'image_src'];
-                $fieldsToUpdate = [];
-                $params = [];
-                foreach ($allowedFields as $field) {
-                    if (array_key_exists($field, $input)) {
-                        $fieldsToUpdate[] = "`$field` = :$field";
-                        $params[$field] = $input[$field];
-                    }
-                }
-
-                if (empty($fieldsToUpdate)) {
-                    sendError("No valid fields provided for update", 400);
-                }
-
-                $params['id'] = $id;
-                $sql = "UPDATE products_tb SET " . implode(', ', $fieldsToUpdate) . " WHERE id = :id";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute($params);
-                sendResponse(["message" => "Product updated successfully", "id" => $id]);
-
-            } elseif ($method === "DELETE") {
-                if (!$id) {
-                    sendError("Product ID is required for deletion", 400);
-                }
-                // Verify existence
-                $check = $pdo->prepare("SELECT id FROM products_tb WHERE id = :id");
-                $check->execute(['id' => $id]);
-                if (!$check->fetch()) {
-                    sendError("Product not found", 404);
-                }
-
-                $stmt = $pdo->prepare("DELETE FROM products_tb WHERE id = :id");
-                $stmt->execute(['id' => $id]);
-                sendResponse(["message" => "Product deleted successfully", "id" => $id]);
-
-            } else {
-                sendError("Method not allowed", 405);
-            }
+        case "register":
+            $input = json_decode(file_get_contents('php://input'), true);
+            $fullname = $input['fullname'] ?? '';
+            $email = $input['email'] ?? '';
+            $pass = password_hash($input['password'] ?? '', PASSWORD_DEFAULT);
+            $stmt = $pdo->prepare("INSERT INTO users (fullname, email, password) VALUES (?, ?, ?)");
+            $stmt->execute([$fullname, $email, $pass]);
+            sendResponse(["id" => $pdo->lastInsertId()], "User registered");
             break;
-
-        // ==========================================
-        // 👥 USERS RESOURCE
-        // ==========================================
-
-        case "users":
-            if ($method === "GET") {
-                if ($id) {
-                    $stmt = $pdo->prepare("SELECT * FROM users_tb WHERE user_id = :id");
-                    $stmt->execute(['id' => $id]);
-                    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-                    if ($user) {
-                        unset($user['password']); // Protect password hash
-                        sendResponse($user);
-                    } else {
-                        sendError("User not found", 404);
-                    }
-                } else {
-                    $stmt = $pdo->prepare("SELECT * FROM users_tb");
-                    $stmt->execute();
-                    $user_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    // Hide passwords for safety
-                    foreach ($user_data as &$u) {
-                        unset($u['password']);
-                    }
-                    sendResponse($user_data);
-                }
-            } elseif ($method === "POST") {
-                if (empty($input['Fname']) || empty($input['Lname']) || empty($input['gender']) || empty($input['email']) || empty($input['password'])) {
-                    sendError("Missing required fields: Fname, Lname, gender, email, password", 400);
-                }
-                
-                if (!filter_var($input['email'], FILTER_VALIDATE_EMAIL)) {
-                    sendError("Invalid email format", 400);
-                }
-
-                // Check conflict
-                $checkEmail = $pdo->prepare("SELECT user_id FROM users_tb WHERE email = :email");
-                $checkEmail->execute(['email' => $input['email']]);
-                if ($checkEmail->fetch()) {
-                    sendError("Email is already registered", 409);
-                }
-
-                $hashed = password_hash($input['password'], PASSWORD_DEFAULT);
-
-                $stmt = $pdo->prepare("INSERT INTO users_tb (Fname, Lname, gender, email, password, phoneNumber) VALUES (:Fname, :Lname, :gender, :email, :password, :phoneNumber)");
-                $stmt->execute([
-                    'Fname'       => $input['Fname'],
-                    'Lname'       => $input['Lname'],
-                    'gender'      => $input['gender'],
-                    'email'       => $input['email'],
-                    'password'    => $hashed,
-                    'phoneNumber' => $input['phoneNumber'] ?? null
-                ]);
-                $newId = $pdo->lastInsertId();
-                sendResponse(["message" => "User created successfully", "user_id" => $newId], 201);
-
-            } elseif ($method === "PATCH") {
-                if (!$id) {
-                    sendError("User ID is required for update", 400);
-                }
-                // Verify existence
-                $check = $pdo->prepare("SELECT user_id FROM users_tb WHERE user_id = :id");
-                $check->execute(['id' => $id]);
-                if (!$check->fetch()) {
-                    sendError("User not found", 404);
-                }
-
-                $allowedFields = ['Fname', 'Lname', 'gender', 'email', 'password', 'phoneNumber'];
-                $fieldsToUpdate = [];
-                $params = [];
-                foreach ($allowedFields as $field) {
-                    if (array_key_exists($field, $input)) {
-                        $fieldsToUpdate[] = "`$field` = :$field";
-                        if ($field === 'password') {
-                            $params[$field] = password_hash($input[$field], PASSWORD_DEFAULT);
-                        } else {
-                            $params[$field] = $input[$field];
-                        }
-                    }
-                }
-
-                if (empty($fieldsToUpdate)) {
-                    sendError("No valid fields provided for update", 400);
-                }
-
-                $params['id'] = $id;
-                $sql = "UPDATE users_tb SET " . implode(', ', $fieldsToUpdate) . " WHERE user_id = :id";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute($params);
-                sendResponse(["message" => "User updated successfully", "user_id" => $id]);
-
-            } elseif ($method === "DELETE") {
-                if (!$id) {
-                    sendError("User ID is required for deletion", 400);
-                }
-                // Verify existence
-                $check = $pdo->prepare("SELECT user_id FROM users_tb WHERE user_id = :id");
-                $check->execute(['id' => $id]);
-                if (!$check->fetch()) {
-                    sendError("User not found", 404);
-                }
-
-                $stmt = $pdo->prepare("DELETE FROM users_tb WHERE user_id = :id");
-                $stmt->execute(['id' => $id]);
-                sendResponse(["message" => "User deleted successfully", "user_id" => $id]);
-
-            } else {
-                sendError("Method not allowed", 405);
-            }
-            break;
-
-        // ==========================================
-        // 🛒 ORDERS RESOURCE
-        // ==========================================
 
         case "orders":
-            if ($method === "GET") {
+            if ($_SERVER['REQUEST_METHOD'] === "GET") {
+                $userId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : null;
                 if ($id) {
-                    $stmt = $pdo->prepare("SELECT * FROM orders_tb WHERE order_id = :id");
-                    $stmt->execute(['id' => $id]);
-                    $order = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $stmt = $pdo->prepare("SELECT o.*, u.fullname, e.name as express_name FROM orders o LEFT JOIN users u ON o.user_id = u.id LEFT JOIN express_services e ON o.express_service_id = e.id WHERE o.id = ?");
+                    $stmt->execute([$id]);
+                    $order = $stmt->fetch();
                     if ($order) {
+                        $items = $pdo->prepare("SELECT oi.*, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?");
+                        $items->execute([$id]);
+                        $order['items'] = $items->fetchAll();
                         sendResponse($order);
-                    } else {
-                        sendError("Order not found", 404);
                     }
+                    sendError("Order not found", 404);
+                } elseif ($userId) {
+                    $stmt = $pdo->prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY id DESC");
+                    $stmt->execute([$userId]);
+                    sendResponse($stmt->fetchAll());
                 } else {
-                    $stmt = $pdo->prepare("SELECT * FROM orders_tb");
-                    $stmt->execute();
-                    $order_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    sendResponse($order_data);
+                    $stmt = $pdo->query("SELECT o.*, u.fullname FROM orders o LEFT JOIN users u ON o.user_id = u.id ORDER BY o.id DESC");
+                    sendResponse($stmt->fetchAll());
                 }
-            } elseif ($method === "POST") {
-                if (empty($input['product_name']) || !isset($input['product_price']) || !isset($input['amount_product']) || empty($input['user_name'])) {
-                    sendError("Missing required fields: product_name, product_price, amount_product, user_name", 400);
-                }
-                $stmt = $pdo->prepare("INSERT INTO orders_tb (product_name, product_img_src, product_price, amount_product, user_name, status, bill_img_src, date_success, user_address, express_with) VALUES (:product_name, :product_img_src, :product_price, :amount_product, :user_name, :status, :bill_img_src, :date_success, :user_address, :express_with)");
-                $stmt->execute([
-                    'product_name'    => $input['product_name'],
-                    'product_img_src' => $input['product_img_src'] ?? null,
-                    'product_price'   => $input['product_price'],
-                    'amount_product'  => $input['amount_product'],
-                    'user_name'       => $input['user_name'],
-                    'status'          => $input['status'] ?? 'Pending',
-                    'bill_img_src'    => $input['bill_img_src'] ?? null,
-                    'date_success'    => $input['date_success'] ?? null,
-                    'user_address'    => $input['user_address'] ?? null,
-                    'express_with'    => $input['express_with'] ?? null
-                ]);
-                $newId = $pdo->lastInsertId();
-                sendResponse(["message" => "Order created successfully", "order_id" => $newId], 201);
-
-            } elseif ($method === "PATCH") {
-                if (!$id) {
-                    sendError("Order ID is required for update", 400);
-                }
-                // Verify existence
-                $check = $pdo->prepare("SELECT order_id FROM orders_tb WHERE order_id = :id");
-                $check->execute(['id' => $id]);
-                if (!$check->fetch()) {
-                    sendError("Order not found", 404);
-                }
-
-                $allowedFields = ['product_name', 'product_img_src', 'product_price', 'amount_product', 'user_name', 'status', 'bill_img_src', 'date_order', 'date_success', 'user_address', 'express_with'];
-                $fieldsToUpdate = [];
-                $params = [];
-                foreach ($allowedFields as $field) {
-                    if (array_key_exists($field, $input)) {
-                        $fieldsToUpdate[] = "`$field` = :$field";
-                        $params[$field] = $input[$field];
-                    }
-                }
-
-                if (empty($fieldsToUpdate)) {
-                    sendError("No valid fields provided for update", 400);
-                }
-
-                $params['id'] = $id;
-                $sql = "UPDATE orders_tb SET " . implode(', ', $fieldsToUpdate) . " WHERE order_id = :id";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute($params);
-                sendResponse(["message" => "Order updated successfully", "order_id" => $id]);
-
-            } elseif ($method === "DELETE") {
-                if (!$id) {
-                    sendError("Order ID is required for deletion", 400);
-                }
-                // Verify existence
-                $check = $pdo->prepare("SELECT order_id FROM orders_tb WHERE order_id = :id");
-                $check->execute(['id' => $id]);
-                if (!$check->fetch()) {
-                    sendError("Order not found", 404);
-                }
-
-                $stmt = $pdo->prepare("DELETE FROM orders_tb WHERE order_id = :id");
-                $stmt->execute(['id' => $id]);
-                sendResponse(["message" => "Order deleted successfully", "order_id" => $id]);
-
-            } else {
-                sendError("Method not allowed", 405);
             }
             break;
 
-        // ==========================================
-        // 🏷️ PROMOTIONS RESOURCE
-        // ==========================================
-
-        case "promotions":
-            if ($method === "GET") {
-                if ($id) {
-                    $stmt = $pdo->prepare("SELECT * FROM promotion_tb WHERE pro_id = :id");
-                    $stmt->execute(['id' => $id]);
-                    $promo = $stmt->fetch(PDO::FETCH_ASSOC);
-                    if ($promo) {
-                        sendResponse($promo);
-                    } else {
-                        sendError("Promotion not found", 404);
+        case "checkout":
+            if ($_SERVER['REQUEST_METHOD'] === "POST") {
+                // Handle file upload and order creation
+                $userId = $_POST['user_id'];
+                $total = $_POST['total_price'];
+                $items = json_decode($_POST['items'], true);
+                $file = $_FILES['payment_slip'];
+                
+                $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+                $newName = "slip_" . time() . "_" . rand(100,999) . "." . $ext;
+                
+                $pdo->beginTransaction();
+                try {
+                    $stmt = $pdo->prepare("INSERT INTO orders (user_id, total_price, shipping_address, express_service_id, payment_method_id, payment_slip) VALUES (?,?,?,?,?,?)");
+                    $stmt->execute([$userId, $total, $_POST['address'], $_POST['express_id'], $_POST['bank_id'], $newName]);
+                    $orderId = $pdo->lastInsertId();
+                    
+                    $itemStmt = $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase) VALUES (?,?,?,?)");
+                    foreach($items as $i) {
+                        $itemStmt->execute([$orderId, $i['id'], $i['qty'], $i['price']]);
                     }
-                } else {
-                    $stmt = $pdo->prepare("SELECT * FROM promotion_tb");
-                    $stmt->execute();
-                    $promo_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    sendResponse($promo_data);
-                }
-            } elseif ($method === "POST") {
-                if (!isset($input['discount'])) {
-                    sendError("Missing required field: discount", 400);
-                }
-                $stmt = $pdo->prepare("INSERT INTO promotion_tb (title, status_now, type, discount, create_date, update_date, end_date) VALUES (:title, :status_now, :type, :discount, :create_date, :update_date, :end_date)");
-                $stmt->execute([
-                    'title'       => $input['title'] ?? null,
-                    'status_now'  => $input['status_now'] ?? 'Active',
-                    'type'        => $input['type'] ?? null,
-                    'discount'    => $input['discount'],
-                    'create_date' => $input['create_date'] ?? null,
-                    'update_date' => $input['update_date'] ?? null,
-                    'end_date'    => $input['end_date'] ?? null
-                ]);
-                $newId = $pdo->lastInsertId();
-                sendResponse(["message" => "Promotion created successfully", "pro_id" => $newId], 201);
-
-            } elseif ($method === "PATCH") {
-                if (!$id) {
-                    sendError("Promotion ID is required for update", 400);
-                }
-                // Verify existence
-                $check = $pdo->prepare("SELECT pro_id FROM promotion_tb WHERE pro_id = :id");
-                $check->execute(['id' => $id]);
-                if (!$check->fetch()) {
-                    sendError("Promotion not found", 404);
-                }
-
-                $allowedFields = ['title', 'status_now', 'type', 'discount', 'create_date', 'update_date', 'end_date'];
-                $fieldsToUpdate = [];
-                $params = [];
-                foreach ($allowedFields as $field) {
-                    if (array_key_exists($field, $input)) {
-                        $fieldsToUpdate[] = "`$field` = :$field";
-                        $params[$field] = $input[$field];
-                    }
-                }
-
-                if (empty($fieldsToUpdate)) {
-                    sendError("No valid fields provided for update", 400);
-                }
-
-                $params['id'] = $id;
-                $sql = "UPDATE promotion_tb SET " . implode(', ', $fieldsToUpdate) . " WHERE pro_id = :id";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute($params);
-                sendResponse(["message" => "Promotion updated successfully", "pro_id" => $id]);
-
-            } elseif ($method === "DELETE") {
-                if (!$id) {
-                    sendError("Promotion ID is required for deletion", 400);
-                }
-                // Verify existence
-                $check = $pdo->prepare("SELECT pro_id FROM promotion_tb WHERE pro_id = :id");
-                $check->execute(['id' => $id]);
-                if (!$check->fetch()) {
-                    sendError("Promotion not found", 404);
-                }
-
-                $stmt = $pdo->prepare("DELETE FROM promotion_tb WHERE pro_id = :id");
-                $stmt->execute(['id' => $id]);
-                sendResponse(["message" => "Promotion deleted successfully", "pro_id" => $id]);
-
-            } else {
-                sendError("Method not allowed", 405);
+                    
+                    move_uploaded_file($file['tmp_name'], "../admin_dashboard/img/" . $newName);
+                    $pdo->commit();
+                    sendResponse(["id" => $orderId], "Checkout complete");
+                } catch(Exception $e) { $pdo->rollBack(); throw $e; }
             }
             break;
 
         default:
-            sendError("Route not found", 404);
+            sendError("Resource '$resource' not found.", 404);
             break;
     }
 
-} catch (PDOException $e) {
-    // Professional, secure database exception wrapper
-    sendError("Database service exception: " . $e->getMessage(), 500);
 } catch (Exception $e) {
-    // Standard system exception wrapper
-    sendError("Internal system server error: " . $e->getMessage(), 500);
+    sendError("System Exception: " . $e->getMessage(), 500);
 }
 ?>

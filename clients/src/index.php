@@ -428,12 +428,12 @@ $userName = $isLoggedIn ? $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'
 
     // ─── Build a single product card HTML string ──────────────────────────
     function buildCard(p) {
-        const imgSrc = `../../admin_dashboard/img/${encodeURIComponent(p.image_src || '')}`;
-        const pid    = 'p-' + p.id;
-        const name   = escHtml(p.product_name || '');
+        const imgSrc = `../../admin_dashboard/img/${encodeURIComponent(p.image_url || '')}`;
+        const pid    = p.id;
+        const name   = escHtml(p.name || '');
         const price  = parseFloat(p.price).toFixed(2);
         const cat    = escHtml(p.category || 'Book');
-        const stock  = parseInt(p.count, 10) || 0;
+        const stock  = parseInt(p.stock, 10) || 0;
         const stockBadge = stock > 0
             ? `<i class='bi bi-check-circle text-success me-1'></i>${stock} in stock`
             : `<span class='text-danger'><i class='bi bi-x-circle me-1'></i>Out of stock</span>`;
@@ -478,14 +478,20 @@ $userName = $isLoggedIn ? $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'
         const msgEl = document.getElementById('fetch-error-msg');
 
         try {
-            const res  = await fetch('../../api/api.php/products');
-            if (!res.ok) throw new Error(`Server returned ${res.status}`);
-            const data = await res.json();
+            // Try fetching with clean URL
+            const res = await fetch('../../api/api.php/products');
+            const result = await res.json();
+
+            if (!res.ok || !result.success) {
+                throw new Error(result.error || `Server Error ${res.status}`);
+            }
 
             // Clear skeleton placeholders
             grid.innerHTML = '';
 
-            if (!Array.isArray(data) || data.length === 0) {
+            const products = result.data;
+
+            if (!Array.isArray(products) || products.length === 0) {
                 grid.innerHTML = `
                     <div class="col-12 text-center py-5 text-muted">
                         <i class="bi bi-journal-x fs-1 d-block mb-3 text-primary opacity-50"></i>
@@ -495,7 +501,7 @@ $userName = $isLoggedIn ? $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'
                 return;
             }
 
-            grid.innerHTML = data.map(buildCard).join('');
+            grid.innerHTML = products.map(buildCard).join('');
 
             // Bind cart buttons
             grid.querySelectorAll('.btn-add-cart').forEach(btn => {

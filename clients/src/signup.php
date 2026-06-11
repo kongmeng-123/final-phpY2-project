@@ -1,188 +1,100 @@
 <?php
-require_once __DIR__ . '/../../api/db_config.php';
-
-// Initialize error messages
-$errors = [];
-$username = $email = "";
-
-// Check if form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // 1. Validate Username
-    if (empty(trim($_POST["username"]))) {
-        $errors['username'] = "Username is required.";
-    } else {
-        $username = htmlspecialchars(trim($_POST["username"]));
-    }
-
-    // 2. Validate Email
-    if (empty(trim($_POST["email"]))) {
-        $errors['email'] = "Email address is required.";
-    } elseif (!filter_var($_POST["email"], FILTER_VALIDATE_EMAIL)) {
-        $errors['email'] = "Invalid email format.";
-    } else {
-        $email = htmlspecialchars(trim($_POST["email"]));
-    }
-
-    // 3. Validate Password
-    if (empty(trim($_POST["password"]))) {
-        $errors['password'] = "Password is required.";
-    } elseif (strlen($_POST["password"]) < 6) {
-        $errors['password'] = "Password must be at least 6 characters.";
-    }
-
-    // If there are no validation errors, proceed to registration logic
-    if (empty($errors)) {
-        try {
-            // Check if email already exists
-            $checkEmail = $pdo->prepare("SELECT user_id FROM users_tb WHERE email = :email");
-            $checkEmail->execute(['email' => $email]);
-            if ($checkEmail->fetch()) {
-                $errors['email'] = "Email is already registered.";
-            } else {
-                // Securely hash the password before saving
-                $hashed_password = password_hash($_POST["password"], PASSWORD_DEFAULT);
-
-                // Split username into Fname and Lname for users_tb
-                $parts = explode(' ', $username, 2);
-                $fname = $parts[0];
-                $lname = $parts[1] ?? '';
-
-                $stmt = $pdo->prepare("INSERT INTO users_tb (Fname, Lname, gender, email, password) VALUES (:fname, :lname, :gender, :email, :password)");
-                $stmt->execute([
-                    'fname' => $fname,
-                    'lname' => $lname,
-                    'gender' => 'Unspecified',
-                    'email' => $email,
-                    'password' => $hashed_password
-                ]);
-
-                header("Location: login.php?registered=true");
-                exit();
-            }
-        } catch (PDOException $e) {
-            $errors['db'] = "Database error: " . $e->getMessage();
-        }
-    }
-}
+session_start();
+// signup.php - Professional Version
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Account</title>
+    <title>Sign Up - E-Book Shop</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #f3f4f6;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .register-card {
-            background: #ffffff;
-            border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            max-width: 480px;
-            width: 100%;
-        }
-        .form-control {
-            border-radius: 12px;
-            padding: 12px 16px;
-            border: 1px solid #dee2e6;
-        }
-        .form-control:focus {
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-            border-color: #6366f1;
-        }
-        .btn-primary {
-            background-color: #6366f1;
-            border: none;
-        }
-        .btn-primary:hover {
-            background-color: #4f46e5;
-        }
-        .is-invalid {
-            border-color: #dc3545 !important;
-        }
+        body { background-color: #f3f4f6; min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; }
+        .auth-card { width: 100%; max-width: 400px; border-radius: 20px; background: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; }
+        .auth-header { background: #6366f1; color: #fff; padding: 2rem; text-align: center; }
+        .auth-body { padding: 2rem; }
+        .btn-primary { background: #6366f1; border: none; padding: 12px; border-radius: 12px; font-weight: 600; transition: all 0.3s; }
+        .btn-primary:hover { background: #4f46e5; transform: translateY(-1px); }
     </style>
 </head>
 <body>
 
-<div class="register-card p-4 p-md-5 m-3">
-    
-    <div class="text-center mb-4">
-        <h2 class="fw-bold mb-1">Get Started</h2>
-        <p class="text-muted small">Create your free account in seconds</p>
+<div class="auth-card">
+    <div class="auth-header">
+        <h2 class="fw-bold mb-0">Join Us</h2>
+        <p class="mb-0 opacity-75">Create an account to start shopping</p>
     </div>
+    <div class="auth-body">
+        <div id="alert-container"></div>
 
-    <?php if (!empty($errors)): ?>
-        <div class="alert alert-danger d-flex align-items-center rounded-4 mb-4 small" role="alert">
-            <i class="bi bi-exclamation-circle-fill me-2"></i>
-            <div>Please correct the errors marked in red below.</div>
-        </div>
-    <?php endif; ?>
-
-    <?php if (isset($success_message)): ?>
-        <div class="alert alert-success d-flex align-items-center rounded-4 mb-4 small" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>
-            <div><?php echo $success_message; ?></div>
-        </div>
-    <?php endif; ?>
-
-    <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST" novalidate>
-        
-        <div class="mb-3">
-            <label class="form-label small fw-bold text-muted tracking-wide text-uppercase mb-1">Username</label>
-            <input type="text" name="username" 
-                   class="form-control <?php echo isset($errors['username']) ? 'is-invalid' : ''; ?>" 
-                   placeholder="Choose a handle" 
-                   value="<?php echo htmlspecialchars($username); ?>">
-            <?php if (isset($errors['username'])): ?>
-                <div class="invalid-feedback small text-uppercase fw-semibold mt-1">
-                    <?php echo $errors['username']; ?>
-                </div>
-            <?php endif; ?>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label small fw-bold text-muted tracking-wide text-uppercase mb-1">Email Address</label>
-            <input type="email" name="email" 
-                   class="form-control <?php echo isset($errors['email']) ? 'is-invalid' : ''; ?>" 
-                   placeholder="name@example.com" 
-                   value="<?php echo htmlspecialchars($email); ?>">
-            <?php if (isset($errors['email'])): ?>
-                <div class="invalid-feedback small text-uppercase fw-semibold mt-1">
-                    <?php echo $errors['email']; ?>
-                </div>
-            <?php endif; ?>
-        </div>
-
-        <div class="mb-4">
-            <label class="form-label small fw-bold text-muted tracking-wide text-uppercase mb-1">Password</label>
-            <input type="password" name="password" 
-                   class="form-control <?php echo isset($errors['password']) ? 'is-invalid' : ''; ?>" 
-                   placeholder="Create a strong password">
-            <?php if (isset($errors['password'])): ?>
-                <div class="invalid-feedback small text-uppercase fw-semibold mt-1">
-                    <?php echo $errors['password']; ?>
-                </div>
-            <?php endif; ?>
-        </div>
-
-        <button type="submit" class="btn btn-primary w-100 py-3 rounded-4 fw-bold shadow-sm mb-3">
-            Create Account
-        </button>
-
-        <div class="text-center">
-            <p class="mb-0 small text-muted">Already have an account? <a href="login.php" class="text-decoration-none fw-semibold text-primary">Sign In</a></p>
-        </div>
-
-    </form>
+        <form id="signupForm">
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted">FULL NAME</label>
+                <input type="text" id="fullname" class="form-control rounded-3" placeholder="John Doe" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted">EMAIL ADDRESS</label>
+                <input type="email" id="email" class="form-control rounded-3" placeholder="name@example.com" required>
+            </div>
+            <div class="mb-4">
+                <label class="form-label small fw-bold text-muted">PASSWORD</label>
+                <input type="password" id="password" class="form-control rounded-3" placeholder="••••••••" minlength="6" required>
+                <div class="form-text small text-muted">Min. 6 characters</div>
+            </div>
+            <button type="submit" id="signupBtn" class="btn btn-primary w-100 mb-3">
+                <span id="btnText">Create Account</span>
+                <span id="btnLoader" class="spinner-border spinner-border-sm d-none" role="status"></span>
+            </button>
+            <div class="text-center small text-muted">
+                Already have an account? <a href="login.php" class="text-decoration-none fw-bold text-primary">Sign In</a>
+            </div>
+        </form>
+    </div>
 </div>
+
+<script>
+document.getElementById('signupForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const fullname = document.getElementById('fullname').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const alertContainer = document.getElementById('alert-container');
+    const signupBtn = document.getElementById('signupBtn');
+    const btnText = document.getElementById('btnText');
+    const btnLoader = document.getElementById('btnLoader');
+
+    // Reset UI
+    alertContainer.innerHTML = '';
+    signupBtn.disabled = true;
+    btnText.classList.add('d-none');
+    btnLoader.classList.remove('d-none');
+
+    try {
+        const response = await fetch('../../api/api.php/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fullname, email, password })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            window.location.href = 'login.php?registered=true';
+        } else {
+            throw new Error(result.error || 'Registration failed');
+        }
+
+    } catch (error) {
+        alertContainer.innerHTML = `<div class="alert alert-danger small py-2">${error.message}</div>`;
+        signupBtn.disabled = false;
+        btnText.classList.remove('d-none');
+        btnLoader.classList.add('d-none');
+    }
+});
+</script>
 
 </body>
 </html>

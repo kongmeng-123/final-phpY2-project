@@ -348,12 +348,12 @@ $userName = $isLoggedIn ? $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'
     }
 
     function buildCard(p) {
-        const imgSrc    = `../../admin_dashboard/img/${encodeURIComponent(p.image_src || '')}`;
-        const pid       = 'p-' + p.id;
-        const name      = escHtml(p.product_name || '');
+        const imgSrc    = `../../admin_dashboard/img/${encodeURIComponent(p.image_url || '')}`;
+        const pid       = p.id;
+        const name      = escHtml(p.name || '');
         const price     = parseFloat(p.price).toFixed(2);
         const cat       = escHtml(p.category || 'Book');
-        const stock     = parseInt(p.count, 10) || 0;
+        const stock     = parseInt(p.stock, 10) || 0;
         const stockBadge = stock > 0
             ? `<i class='bi bi-check-circle text-success me-1'></i>${stock} in stock`
             : `<span class='text-danger'><i class='bi bi-x-circle me-1'></i>Out of stock</span>`;
@@ -397,7 +397,8 @@ $userName = $isLoggedIn ? $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'
         try {
             const res  = await fetch('../../api/api.php/products');
             if (!res.ok) throw new Error(`Server returned ${res.status}`);
-            allProducts = await res.json();
+            const result = await res.json();
+            allProducts = result.data;
 
             renderProducts();
         } catch (err) {
@@ -414,7 +415,7 @@ $userName = $isLoggedIn ? $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'
 
         const filtered = searchVal
             ? allProducts.filter(p =>
-                (p.product_name || '').toLowerCase().includes(searchVal) ||
+                (p.name || '').toLowerCase().includes(searchVal) ||
                 (p.category     || '').toLowerCase().includes(searchVal))
             : allProducts;
 

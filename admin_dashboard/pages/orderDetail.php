@@ -1,22 +1,48 @@
 <?php
 require_once "../../api/db_config.php";
 
-$orderId = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
+$orderId = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $order = null;
+$items = [];
 
 if ($orderId > 0) {
     try {
+        // 1. Fetch Order with joined information
         $stmt = $pdo->prepare("
-            SELECT o.*, u.Fname, u.Lname, u.email, u.phoneNumber 
-            FROM orders_tb o 
-            LEFT JOIN users_tb u ON o.user_id = u.user_id 
-            WHERE o.order_id = ?
+            SELECT o.*, u.fullname, u.email, u.phone, 
+                   e.name as express_name, m.name as payment_name 
+            FROM orders o 
+            LEFT JOIN users u ON o.user_id = u.id 
+            LEFT JOIN express_services e ON o.express_service_id = e.id
+            LEFT JOIN payment_methods m ON o.payment_method_id = m.id
+            WHERE o.id = ?
         ");
         $stmt->execute([$orderId]);
         $order = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($order) {
+            // 2. Fetch Order Items
+            $itemStmt = $pdo->prepare("
+                SELECT oi.*, p.name as product_name, p.image_url 
+                FROM order_items oi 
+                JOIN products p ON oi.product_id = p.id 
+                WHERE oi.order_id = ?
+            ");
+            $itemStmt->execute([$orderId]);
+            $items = $itemStmt->fetchAll(PDO::FETCH_ASSOC);
+        }
     } catch (PDOException $e) {
         $error = $e->getMessage();
     }
+}
+
+// Handle Status Update
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
+    $newStatus = $_POST['status'];
+    $stmt = $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?");
+    $stmt->execute([$newStatus, $orderId]);
+    header("Location: orderDetail.php?id=" . $orderId . "&updated=1");
+    exit();
 }
 ?>
 <!doctype html>
@@ -26,407 +52,139 @@ if ($orderId > 0) {
     <meta charset="utf-8" />
     <meta content="IE=edge" http-equiv="X-UA-Compatible" />
     <meta content="width=device-width,initial-scale=1,shrink-to-fit=no" name="viewport" />
-    <meta content="" name="description" />
-    <meta content="" name="author" />
-    <title>SB Admin 2 - Tables</title>
+    <title>G-Book Admin - Order #<?php echo $orderId; ?></title>
     <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" rel="stylesheet"
-        crossorigin="anonymous"
-        integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
-        referrerpolicy="no-referrer" />
     <link href="../css/sb-admin-2.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
-        integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link href="../vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet" />
 </head>
 
 <body id="page-top">
     <div id="wrapper">
+        <!-- Sidebar -->
         <ul class="navbar-nav accordion bg-gradient-primary sidebar sidebar-dark" id="accordionSidebar">
-            <a class="align-items-center d-flex justify-content-center sidebar-brand" href="index.html">
-                <div class="rotate-n-15 sidebar-brand-icon">
-                    <i class="fas fa-laugh-wink"></i>
-                </div>
-                <div class="mx-3 sidebar-brand-text">
-                    G-Book
-                    <sup>2</sup>
-                </div>
+            <a class="align-items-center d-flex justify-content-center sidebar-brand" href="index.php">
+                <div class="rotate-n-15 sidebar-brand-icon"><i class="fas fa-book"></i></div>
+                <div class="mx-3 sidebar-brand-text">G-Book Admin</div>
             </a>
             <hr class="sidebar-divider my-0" />
-            <li class="nav-item ">
-                <a class="nav-link" href="index.php">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
+            <li class="nav-item"><a class="nav-link" href="index.php"><i class="fas fa-fw fa-tachometer-alt"></i><span>Dashboard</span></a></li>
             <hr class="sidebar-divider" />
-            <hr class="sidebar-divider" />
-            <div class="sidebar-heading">Addons</div>
-            <li class="nav-item active">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseOrder">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Order</span>
-                </a>
-                <div class="collapse" id="collapseOrder">
-                    <div class="py-2 bg-white collapse-inner rounded">
-                        <h6 class="collapse-header">Order detail :</h6>
-                        <a class="collapse-item active" href="allOrder.php">All</a>
-                        <a class="collapse-item" href="newOrder.php">New order</a>
-                        <a class="collapse-item" href="checkOrder.php">Check order</a>
-                    </div>
-                </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseCustomer">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Customer</span>
-                </a>
-                <div class="collapse" id="collapseCustomer">
-                    <div class="py-2 bg-white collapse-inner rounded">
-                        <a class="collapse-item" href="customerInfor.php">User Information</a>
-                    </div>
-                </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseProduct">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Product management</span>
-                </a>
-                <div class="collapse" id="collapseProduct">
-                    <div class="py-2 bg-white collapse-inner rounded">
-                        <a class="collapse-item" href="allProduct.php">All product</a>
-                        <a class="collapse-item" href="checkProduct.php">Check product</a>
-                        <a class="collapse-item" href="addProduct.php">Add product</a>
-                    </div>
-                </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseMarketing">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Marketing</span>
-                </a>
-                <div class="collapse" id="collapseMarketing">
-                    <div class="py-2 bg-white collapse-inner rounded">
-                        <a class="collapse-item" href="promotion.php">Promotion</a>
-                    </div>
-                </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-fw fa-cog"></i>
-                    <span>Setting</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fa-arrow-right-from-bracket fa-solid"></i>
-                    <span>Logout</span>
-                </a>
-            </li>
-            <hr class="d-none d-md-block sidebar-divider" />
-            <div class="d-none d-md-inline text-center">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
-            </div>
+            <li class="nav-item active"><a class="nav-link" href="allOrder.php"><i class="fas fa-fw fa-shopping-cart"></i><span>Orders</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="allProduct.php"><i class="fas fa-fw fa-box"></i><span>Products</span></a></li>
         </ul>
+
         <div class="d-flex flex-column" id="content-wrapper">
             <div id="content">
                 <nav class="bg-white mb-4 navbar navbar-expand navbar-light shadow static-top topbar">
-                    <form class="form-inline">
-                        <button class="mr-3 btn btn-link d-md-none rounded-circle" id="sidebarToggleTop">
-                            <i class="fa fa-bars"></i>
-                        </button>
-                    </form>
-                    <form
-                        class="d-none d-sm-inline-block form-inline ml-md-3 mr-auto mw-100 my-2 my-md-0 navbar-search">
-                        <div class="input-group">
-                            <input aria-describedby="basic-addon2" aria-label="Search"
-                                class="small bg-light border-0 form-control" placeholder="Search for..." type="text" />
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-sm fa-search"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                    <ul class="navbar-nav ml-auto">
-                        <li class="nav-item dropdown no-arrow d-sm-none">
-                            <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
-                                aria-haspopup="true" id="searchDropdown" role="button">
-                                <i class="fas fa-fw fa-search"></i>
-                            </a>
-                            <div class="shadow animated--grow-in dropdown-menu dropdown-menu-right p-3"
-                                aria-labelledby="searchDropdown">
-                                <form class="form-inline mr-auto navbar-search w-100">
-                                    <div class="input-group">
-                                        <input aria-describedby="basic-addon2" aria-label="Search"
-                                            class="small bg-light border-0 form-control" placeholder="Search for..."
-                                            type="text" />
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button">
-                                                <i class="fas fa-sm fa-search"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </li>
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
-                                aria-haspopup="true" id="alertsDropdown" role="button">
-                                <i class="fas fa-fw fa-bell"></i>
-                                <span class="badge badge-counter badge-danger">3+</span>
-                            </a>
-                            <div class="shadow animated--grow-in dropdown-menu dropdown-menu-right dropdown-list"
-                                aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">Alerts Center</h6>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas text-white fa-file-alt"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 12, 2019</div>
-                                        <span class="font-weight-bold">A new monthly report is ready to download!</span>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3">
-                                        <div class="bg-success icon-circle">
-                                            <i class="fas text-white fa-donate"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 7, 2019</div>
-                                        $290.29 has been deposited into your account!
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-warning">
-                                            <i class="fas text-white fa-exclamation-triangle"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 2, 2019</div>
-                                        Spending Alert: We've noticed unusually high spending for your account.
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item small text-center text-gray-500">Show All Alerts</a>
-                            </div>
-                        </li>
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
-                                aria-haspopup="true" id="messagesDropdown" role="button">
-                                <i class="fas fa-fw fa-envelope"></i>
-                                <span class="badge badge-counter badge-danger">7</span>
-                            </a>
-                            <div class="shadow animated--grow-in dropdown-menu dropdown-menu-right dropdown-list"
-                                aria-labelledby="messagesDropdown">
-                                <h6 class="dropdown-header">Message Center</h6>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="img/undraw_profile_1.svg" alt="..." />
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div class="font-weight-bold">
-                                        <div class="text-truncate">Hi there! I am wondering if you can help me with a
-                                            problem I've been having.</div>
-                                        <div class="small text-gray-500">Emily Fowler · 58m</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="img/undraw_profile_2.svg" alt="..." />
-                                        <div class="status-indicator"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">I have the photos that you ordered last month, how
-                                            would you like them sent to you?</div>
-                                        <div class="small text-gray-500">Jae Chun · 1d</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="img/undraw_profile_3.svg" alt="..." />
-                                        <div class="status-indicator bg-warning"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">Last month's report looks great, I am very happy with
-                                            the progress so far, keep up the good work!</div>
-                                        <div class="small text-gray-500">Morgan Alvarez · 2d</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60"
-                                            alt="..." />
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">Am I a good boy? The reason I ask is because someone
-                                            told me that people say this to all dogs, even if they aren't good...</div>
-                                        <div class="small text-gray-500">Chicken the Dog · 2w</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item small text-center text-gray-500">Read More Messages</a>
-                            </div>
-                        </li>
-                        <div class="d-none d-sm-block topbar-divider"></div>
-                        <li class="nav-item dropdown no-arrow">
-                            <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
-                                aria-haspopup="true" id="userDropdown" role="button">
-                                <span class="small d-lg-inline d-none mr-2 text-gray-600">Douglas McGee</span>
-                                <img class="rounded-circle img-profile" src="img/undraw_profile.svg" />
-                            </a>
-                            <div class="shadow animated--grow-in dropdown-menu dropdown-menu-right"
-                                aria-labelledby="userDropdown">
-                                <a href="#" class="dropdown-item">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-user"></i>
-                                    Profile
-                                </a>
-                                <a href="#" class="dropdown-item">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-cogs"></i>
-                                    Settings
-                                </a>
-                                <a href="#" class="dropdown-item">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-list"></i>
-                                    Activity Log
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a href="#" class="dropdown-item" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-sign-out-alt"></i>
-                                    Logout
-                                </a>
-                            </div>
-                        </li>
-                    </ul>
+                    <button class="mr-3 btn btn-link d-md-none rounded-circle" id="sidebarToggleTop"><i class="fa fa-bars"></i></button>
+                    <div class="ml-auto px-4"><a href="allOrder.php" class="btn btn-sm btn-secondary"><i class="fas fa-arrow-left"></i> Back to Orders</a></div>
                 </nav>
+
                 <div class="container-fluid">
-                    <h1 class="h3 mb-2 text-gray-800">Order detail of <?php echo str_pad($orderId, 4, '0', STR_PAD_LEFT); ?></h1>
+                    <h1 class="h3 mb-4 text-gray-800">Order Detail #<?php echo str_pad($orderId, 4, '0', STR_PAD_LEFT); ?></h1>
 
-                    <div class="shadow mb-4 card">
-                        <div class="card-body">
-                            <?php if (!$order): ?>
-                                <div class="alert alert-warning">Order not found or invalid ID.</div>
-                            <?php else: 
-                                $items = json_decode($order['order_items'], true) ?: [];
-                                $totalPrice = 0;
-                            ?>
-                                <div class="row mb-4">
-                                    <div class="col-md-6">
-                                        <h5 class="font-weight-bold text-primary">Customer Information</h5>
-                                        <p class="mb-1"><strong>Name:</strong> <?php echo htmlspecialchars(($order['Fname'] ?? 'N/A') . ' ' . ($order['Lname'] ?? '')); ?></p>
-                                        <p class="mb-1"><strong>Email:</strong> <?php echo htmlspecialchars($order['email'] ?? 'N/A'); ?></p>
-                                        <p class="mb-1"><strong>Phone:</strong> <?php echo htmlspecialchars($order['phoneNumber'] ?? 'N/A'); ?></p>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <h5 class="font-weight-bold text-primary">Shipping Information</h5>
-                                        <p class="mb-1"><strong>Address:</strong> <?php echo htmlspecialchars($order['express_address'] ?? 'N/A'); ?></p>
-                                        <p class="mb-1"><strong>Carrier:</strong> <?php echo htmlspecialchars($order['express_with'] ?? 'N/A'); ?></p>
-                                        <p class="mb-1"><strong>Date:</strong> <?php echo $order['date_order']; ?></p>
-                                        <p class="mb-1"><strong>Status:</strong> <span class="badge badge-info"><?php echo htmlspecialchars($order['order_status']); ?></span></p>
+                    <?php if (isset($_GET['updated'])): ?>
+                        <div class="alert alert-success">Order status updated successfully.</div>
+                    <?php endif; ?>
+
+                    <?php if (!$order): ?>
+                        <div class="alert alert-warning">Order not found.</div>
+                    <?php else: ?>
+                        <div class="row">
+                            <!-- Customer & Info -->
+                            <div class="col-lg-4">
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Customer & Info</h6></div>
+                                    <div class="card-body">
+                                        <p><strong>Name:</strong> <?php echo htmlspecialchars($order['fullname']); ?></p>
+                                        <p><strong>Email:</strong> <?php echo htmlspecialchars($order['email']); ?></p>
+                                        <p><strong>Phone:</strong> <?php echo htmlspecialchars($order['phone']); ?></p>
+                                        <hr>
+                                        <p><strong>Shipping:</strong> <?php echo htmlspecialchars($order['express_name']); ?></p>
+                                        <p><strong>Payment:</strong> <?php echo htmlspecialchars($order['payment_name']); ?></p>
+                                        <p><strong>Address:</strong><br><span class="text-muted small"><?php echo nl2br(htmlspecialchars($order['shipping_address'])); ?></span></p>
                                     </div>
                                 </div>
 
-                                <div class="table-responsive">
-                                    <table cellspacing="0" class="table table-bordered" id="dataTable" width="100%">
-                                        <thead>
-                                            <tr>
-                                                <th>Product Name</th>
-                                                <th>Image</th>
-                                                <th>Category</th>
-                                                <th>Amount</th>
-                                                <th>Price</th>
-                                                <th>Subtotal</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($items as $item): 
-                                                $subtotal = $item['price'] * $item['amount'];
-                                                $totalPrice += $subtotal;
-                                            ?>
-                                                <tr>
-                                                    <td><?php echo htmlspecialchars($item['product_name']); ?></td>
-                                                    <td>
-                                                        <img src="../img/<?php echo htmlspecialchars($item['image_src'] ?? 'product.jpg'); ?>" 
-                                                             alt="product image" height="60" width="50"
-                                                             onerror="this.src='https://placehold.co/50x60?text=Product'">
-                                                    </td>
-                                                    <td><?php echo htmlspecialchars($item['category'] ?? 'N/A'); ?></td>
-                                                    <td><?php echo $item['amount']; ?></td>
-                                                    <td>$ <?php echo number_format($item['price'], 2); ?></td>
-                                                    <td>$ <?php echo number_format($subtotal, 2); ?></td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                        <tfoot>
-                                            <tr>
-                                                <th colspan="5" class="text-right">Grand Total:</th>
-                                                <th class="text-primary font-weight-bold">$ <?php echo number_format($totalPrice, 2); ?></th>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
+                                <!-- Status Control -->
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Order Status</h6></div>
+                                    <div class="card-body">
+                                        <form method="POST">
+                                            <div class="form-group">
+                                                <select name="status" class="form-control">
+                                                    <?php 
+                                                    $statuses = ['Pending Payment', 'Payment Verified', 'Preparing Order', 'Shipping', 'Delivered', 'Cancelled'];
+                                                    foreach ($statuses as $s) {
+                                                        echo "<option value='$s' " . ($order['status'] === $s ? 'selected' : '') . ">$s</option>";
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                            <button type="submit" name="update_status" class="btn btn-primary btn-block">Update Status</button>
+                                        </form>
+                                    </div>
                                 </div>
-                                <?php if (!empty($order['bill_img_src'])): ?>
-                                    <div class="mt-4">
-                                        <h5 class="font-weight-bold text-primary">Payment Slip:</h5>
-                                        <div class="border rounded p-2 d-inline-block bg-light">
-                                            <a href="../img/<?php echo htmlspecialchars($order['bill_img_src']); ?>" target="_blank">
-                                                <img src="../img/<?php echo htmlspecialchars($order['bill_img_src']); ?>" 
-                                                    alt="Payment Slip" style="max-width: 400px; border: 1px solid #ddd;"
-                                                    onerror="this.style.display='none'">
-                                            </a>
+                            </div>
+
+                            <!-- Products -->
+                            <div class="col-lg-8">
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Ordered Products</h6></div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Product</th>
+                                                        <th>Price</th>
+                                                        <th>Qty</th>
+                                                        <th>Total</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($items as $item): ?>
+                                                        <tr>
+                                                            <td>
+                                                                <div class="d-flex align-items-center">
+                                                                    <img src="../img/<?php echo $item['image_url']; ?>" width="40" class="mr-2 rounded" onerror="this.src='https://placehold.co/40x50?text=B'">
+                                                                    <?php echo htmlspecialchars($item['product_name']); ?>
+                                                                </div>
+                                                            </td>
+                                                            <td>₭<?php echo number_format($item['price_at_purchase']); ?></td>
+                                                            <td><?php echo $item['quantity']; ?></td>
+                                                            <td>₭<?php echo number_format($item['price_at_purchase'] * $item['quantity']); ?></td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr>
+                                                        <th colspan="3" class="text-right">Grand Total</th>
+                                                        <th class="text-primary fs-5">₭<?php echo number_format($order['total_price']); ?></th>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Payment Slip -->
+                                <?php if ($order['payment_slip']): ?>
+                                    <div class="card shadow mb-4">
+                                        <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Payment Receipt</h6></div>
+                                        <div class="card-body text-center">
+                                            <img src="../img/<?php echo $order['payment_slip']; ?>" class="img-fluid rounded border" style="max-height: 500px;">
                                         </div>
                                     </div>
                                 <?php endif; ?>
-                            <?php endif; ?>
+                            </div>
                         </div>
-                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
-            <footer class="bg-white sticky-footer">
-                <div class="my-auto container">
-                    <div class="my-auto copyright text-center">
-                        <span>Copyright © Your Website 2020</span>
-                    </div>
-                </div>
-            </footer>
-        </div>
-    </div>
-    <a href="#page-top" class="rounded scroll-to-top">
-        <i class="fas fa-angle-up"></i>
-    </a>
-    <div class="fade modal" id="logoutModal" aria-hidden="true" aria-labelledby="exampleModalLabel" role="dialog"
-        tabindex="-1">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a href="login.html" class="btn btn-primary">Logout</a>
-                </div>
-            </div>
+            <footer class="bg-white sticky-footer"><div class="container my-auto text-center copyright"><span>Copyright © G-Book Shop 2024</span></div></footer>
         </div>
     </div>
     <script src="../vendor/jquery/jquery.min.js"></script>
     <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="../vendor/jquery-easing/jquery.easing.min.js"></script>
-    <script src="../js/sb-admin-2.min.js"></script>
-    <script src="../vendor/datatables/jquery.dataTables.min.js"></script>
-    <script src="../vendor/datatables/dataTables.bootstrap4.min.js"></script>
-    <script src="../js/demo/datatables-demo.js"></script>
-
 </body>
-
 </html>

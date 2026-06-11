@@ -120,7 +120,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST" novalidate>
         
         <div class="mb-3">
-            <label class="form-label small fw-bold text-muted tracking-wide text-uppercase mb-1">Username</label>
+            <label class="form-label small fw-bold text-muted tracking-wide text-uppercase mb-1">Username:</label>
             <input type="text" name="username" 
                    class="form-control <?php echo isset($errors['username']) ? 'is-invalid' : ''; ?>" 
                    placeholder="Choose a handle" 
@@ -133,7 +133,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
 
         <div class="mb-3">
-            <label class="form-label small fw-bold text-muted tracking-wide text-uppercase mb-1">Email Address</label>
+            <label class="form-label small fw-bold text-muted tracking-wide text-uppercase mb-1">Email Address:</label>
             <input type="email" name="email" 
                    class="form-control <?php echo isset($errors['email']) ? 'is-invalid' : ''; ?>" 
                    placeholder="name@example.com" 
@@ -146,7 +146,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
 
         <div class="mb-4">
-            <label class="form-label small fw-bold text-muted tracking-wide text-uppercase mb-1">Password</label>
+            <label class="form-label small fw-bold text-muted tracking-wide text-uppercase mb-1">Password:</label>
             <input type="password" name="password" 
                    class="form-control <?php echo isset($errors['password']) ? 'is-invalid' : ''; ?>" 
                    placeholder="Create a strong password">

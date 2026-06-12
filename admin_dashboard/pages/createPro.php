@@ -31,7 +31,7 @@
                     <i class="fas fa-laugh-wink"></i>
                 </div>
                 <div class="mx-3 sidebar-brand-text">
-                    E-book
+                    G-Book
                     <sup>2</sup>
                 </div>
             </a>
@@ -53,9 +53,9 @@
                 <div class="collapse" id="collapseOrder">
                     <div class="py-2 bg-white collapse-inner rounded">
                         <h6 class="collapse-header">Order detail :</h6>
-                        <a class="collapse-item" href="allOrder.php">All</a>
-                        <a class="collapse-item" href="newOrder.php">New order</a>
-                        <a class="collapse-item" href="checkOrder.php">Check order</a>
+                        <a class="collapse-item" href="checkPayment.php">Payment</a>
+                        <a class="collapse-item" href="checkOrder.php">Order status</a>
+                        <a class="collapse-item" href="orderHistory.php">History</a>
                     </div>
                 </div>
             </li>
@@ -131,7 +131,7 @@
                             </div>
                         </div>
                     </form>
-                                     <ul class="navbar-nav ml-auto">
+                    <ul class="navbar-nav ml-auto">
                         <li class="nav-item dropdown no-arrow d-sm-none">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="searchDropdown" role="button">
@@ -159,7 +159,7 @@
                                 <i class="fas fa-fw fa-bell"></i>
                                 <span class="badge badge-counter badge-danger">0</span>
                             </a>
-                            
+
                         </li>
                         <li class="nav-item dropdown no-arrow mx-1">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
@@ -167,87 +167,47 @@
                                 <i class="fas fa-fw fa-envelope"></i>
                                 <span class="badge badge-counter badge-danger">0</span>
                             </a>
-                            
+
                         </li>
                         <div class="d-none d-sm-block topbar-divider"></div>
                         <li class="nav-item dropdown no-arrow">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="userDropdown" role="button">
                                 <span class="small d-lg-inline d-none mr-2 text-gray-600">Douglas McGee</span>
-                                <img class="rounded-circle img-profile" src="https://cdn-icons-png.flaticon.com/512/9703/9703596.png" />
+                                <img class="rounded-circle img-profile"
+                                    src="https://cdn-icons-png.flaticon.com/512/9703/9703596.png" />
                             </a>
-                            
+
                         </li>
                     </ul>
                 </nav>
                 <div class="container-fluid">
 
                     <div class="container-fluid row justify-content-center">
-                        <form class="col " style="max-width: 700px;background-color: white;">
+                        <form class="col " style="max-width: 600px;background-color: white;">
                             <div>
-                                <div class="col py-2" style="display:flex; flex-direction:column; gap:20px">
+                                <div class="col"
+                                    style="display:flex; flex-direction:column; gap:20px; padding: 100px 20px">
                                     <div class="col-md-8">
-                                        <label class="form-label" for="inputTitle4">Title</label> <br />
-                                        <input class="form-control" type="Title" id="inputTitle4" placeholder="Title" />
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label" for="inputCategory">Status</label> <br />
-                                        <select class="form-select btn bg-white" id="inputCategory">
-                                            <option selected="selected">Active</option>
-                                            <option>wait</option>
-                                            <option>End</option>
-
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label" for="inputType">Type</label> <br />
-                                        <select class="form-select btn bg-white" id="inputType">
-                                            <option selected="selected">All</option>
-                                            <option>Category</option>
-                                            <option>Just one</option>
-
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6" style="display: none; " id="selectCategory">
-                                        <label class="form-label" for="inputCategory">Chose category</label> <br />
-                                        <select class="form-select btn bg-white" id="inputCategory">
-                                            <option selected="selected">how to</option>
-                                            <option>mindset</option>
-                                            <option>story</option>
-                                            <option>history</option>
-
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6" style="display: none;" id="selectBook">
-                                        <label class="form-label" for="inputBook">Chose book</label> <br />
-                                        <select class="form-select btn bg-white" id="inputBook">
-                                            <option selected="selected">how to</option>
-                                            <option>mindset</option>
-                                            <option>rich dad poor dad</option>
-                                            <option>how to focus</option>
-
-                                        </select>
+                                        <label class="form-label" for="title">Title</label> <br />
+                                        <input class="form-control" type="text" id="title" placeholder="Title" />
                                     </div>
 
                                     <div class="col-md-6">
-                                        <label class="form-label" for="inputAuthorName4">Discount</label>
-                                        <input class="form-control" type="AuthorName" id="inputAuthorName4"
+                                        <label class="form-label" for="discount">Discount</label>
+                                        <input class="form-control" type="number" id="discount"
                                             placeholder="Enter discount(%)" />
                                     </div>
-                                    <div class="row col-12 justify-content-between">
+                                    <div class="row col-12 justify-content-between px-10">
                                         <div>
-                                            <label class="form-label" for="inputDateImport">Date start</label>
-                                            <input class="form-control" type="date" id="inputDateImport"
+                                            <label class="form-label" for="date_order">Start</label>
+                                            <input class="form-control" type="date" id="date_order"
                                                 placeholder="xx/xx/xx" />
                                         </div>
+                                        
                                         <div>
-                                            <label class="form-label" for="inputDateImport">Date update</label>
-                                            <input class="form-control" type="date" id="inputDateImport"
-                                                placeholder="xx/xx/xx" />
-                                        </div>
-                                        <div>
-                                            <label class="form-label" for="inputDateImport">Date end</label>
-                                            <input class="form-control" type="date" id="inputDateImport"
+                                            <label class="form-label" for="end_date">End</label>
+                                            <input class="form-control" type="date" id="end_date"
                                                 placeholder="xx/xx/xx" />
                                         </div>
 
@@ -256,8 +216,10 @@
                                 </div>
 
                             </div>
-                            <div class="col-12 mt-4" style="position: relative; left: 50%; translate: -56px;">
-                                <button class="btn btn-primary" type="submit">Create Now</button>
+                            <div class="col-12 my-4" style="position: relative; left: 50%; translate: -56px;">
+                                
+                                <button class="btn btn-primary" id="submit_btn" type="button" onclick="handleSubmit()"></button>
+
                             </div>
                         </form>
                     </div>
@@ -305,20 +267,72 @@
     <script src="../vendor/datatables/dataTables.bootstrap4.min.js"></script>
     <script src="../js/demo/datatables-demo.js"></script>
     <script>
-        let proType = document.getElementById("inputType");
-        proType.addEventListener("change", (event) => {
-            if (event.target.value == "Category") {
-                document.getElementById("selectCategory").style.display = "block"
-            }
-            else if (event.target.value == "Just one") {
-                document.getElementById("selectBook").style.display = "block"
-            }
-            else {
-                document.getElementById("selectCategory").style.display = "none";
-                document.getElementById("selectBook").style.display = "none";
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('id');
+        console.log("Order ID:", orderId);
 
+        let title = document.getElementById("title");
+        let discount = document.getElementById("discount");
+        let date_order = document.getElementById("date_order");
+        let update_date = document.getElementById("update_date");
+        let end_date = document.getElementById("end_date");
+
+        document.getElementById("submit_btn").textContent = orderId ? "Update Now" : "Create Now";
+
+        if(orderId) {
+            fetch(`http://localhost:9090/api/api.php/promotions/${orderId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Promotion data:", data);
+                    title.value = data.title;
+                    discount.value = data.discount;
+                    date_order.value = data.date_order;
+                    end_date.value = data.end_date;
+                })
+                .catch(error => {
+                    console.error("Error fetching promotion:", error);
+                    alert("Failed to fetch promotion details. Please try again.");
+                });
+        }
+
+
+        async function handleSubmit() {
+            try {
+                let response = await fetch("http://localhost:9090/api/api.php/promotions", {
+                    method: orderId ? "PUT" : "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    
+                    body: JSON.stringify({
+                        id: orderId ? orderId : undefined,
+                        title: title.value,
+                        discount: discount.value,
+                        date_order: date_order.value,
+                        end_date: end_date.value
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                let data = await response.json();
+                alert("Promotion " + (orderId ? "updated" : "created") + " successfully!");
+                window.location.href = "promotion.php";
+
+            } catch (error) {
+                console.error("Error creating promotion:", error);
+                alert("Failed to create promotion. Please try again.");
             }
-        })
+        }
+
+
+
     </script>
 
 </body>

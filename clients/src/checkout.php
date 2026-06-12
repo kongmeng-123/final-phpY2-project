@@ -1,5 +1,9 @@
 <?php
 session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
 require_once __DIR__ . '/../../api/db_config.php';
 
 $success = false;

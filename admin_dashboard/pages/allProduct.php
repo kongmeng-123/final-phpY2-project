@@ -51,9 +51,9 @@
                 <div class="collapse" id="collapseOrder">
                     <div class="py-2 bg-white collapse-inner rounded">
                         <h6 class="collapse-header">Order detail :</h6>
-                        <a class="collapse-item" href="allOrder.php">All</a>
-                        <a class="collapse-item" href="newOrder.php">New order</a>
-                        <a class="collapse-item" href="checkOrder.php">Check order</a>
+                        <a class="collapse-item" href="checkPayment.php">Payment</a>
+                        <a class="collapse-item" href="checkOrder.php">Order status</a>
+                        <a class="collapse-item" href="orderHistory.php">History</a>
                     </div>
                 </div>
             </li>
@@ -179,24 +179,28 @@
                     </ul>
                 </nav>
                 <div class="container-fluid">
-                    <h1 class="h3 mb-2 text-gray-800">Products in store</h1>
+                    <h1 class="h3 mb-2 text-gray-800">Products in stock</h1>
                     <h3 class="h3 mb-2 text-gray-600">Category :</h3>
 
-                    <div class="py-2">
-                        <button class="btn bg-primary text-white" onclick="handleCategory('All')">All</button>
-                        <button class="btn bg-primary text-white" onclick="handleCategory('how to')">How to</button>
-                        <button class="btn bg-primary text-white" onclick="handleCategory('mindset')">Mindset</button>
-                        <button class="btn bg-primary text-white" onclick="handleCategory('story')">Story</button>
-                        <button class="btn bg-primary text-white" onclick="handleCategory('history')">History</button>
+                    <div class="py-2 px-4 row justify-content-between">
+                        <div>
+                             <button class="btn bg-primary text-white" onclick="handleCategory('All')">All</button>
+                            <button class="btn bg-primary text-white" onclick="handleCategory('how to')">How to</button>
+                            <button class="btn bg-primary text-white" onclick="handleCategory('mindset')">Mindset</button>
+                            <button class="btn bg-primary text-white" onclick="handleCategory('story')">Story</button>
+                            <button class="btn bg-primary text-white" onclick="handleCategory('history')">History</button>
+                        </div>
+                        <div>
+                            <input type="search" id="search_data" placeholder="Search" style="border:2px solid gray;padding: 4px;border-radius:8px; width: 230px;">
+                        </div>
+                       
                     </div>
                     <div class="shadow mb-4 card">
 
                         <div class="card-body">
                             <div class="table-responsive">
                                 <table cellspacing="0" class="table table-bordered" width="100%">
-                                    <div class="row justify-content-end p-3" >
-                                        <input type="search" id="search_data" placeholder="Search" style="border:2px solid gray;padding: 4px;border-radius:8px; width: 230px;">
-                                    </div>
+                                    
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -257,6 +261,7 @@
     <script src="../vendor/datatables/dataTables.bootstrap4.min.js"></script>
     <script src="../js/demo/datatables-demo.js"></script>
     <script>
+       
         
         let allProducts = []; // เก็บข้อมูลทั้งหมดไว้ที่นี่
         let categoryNow = "All";
@@ -283,13 +288,13 @@
                 tableRow.innerHTML = `
                     <td><a href="productDetail.php?id=${item.id}" title="product detail">${item.id}</a></td>
                     <td>${item.product_name}</td>
-                    <td>${item.price}</td>
+                    <td>$ ${item.price}</td>
                     <td>${item.category}</td>
                     <td>${item.count}</td>
                     <td><img src="../img/${item.image_src}" width="50" height="70"></td>
                     <td>
-                        <button class="btn bg-warning text-white">edit</button>
-                        <button class="btn btn-danger">del</button>
+                        <a href="editProduct.php?id=${item.id}" class="btn bg-warning text-white">edit</a>
+                        <button class="btn btn-danger" onclick="deleteProduct(${item.id})">del</button>
                     </td>
                 `;
                 tb_body.appendChild(tableRow);
@@ -319,7 +324,32 @@
         }
 
         loadProduct();
+        function deleteProduct(id) {
+            if (confirm("Are you sure you want to delete this product?")) {
+                fetch(`http://localhost:9090/api/api.php/products/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error("Network response was not ok");
+                    return response.json();
+                })
+                .then(data => {
+                    alert(data.message);
+                    // หลังจากลบแล้ว ให้โหลดข้อมูลใหม่
+                    loadProduct();
+                })
+                .catch(error => {
+                    console.error("There was a problem with the delete request: ", error);
+                    alert("Failed to delete product. Please try again.");
 
+                });
+            }
+        }
+        function editProduct(id) {
+            // นำไปยังหน้าการแก้ไข โดยส่ง ID ผ่าน URL
+            window.location.href = `editProduct.php?id=${id}`;
+
+        }
         
             
         

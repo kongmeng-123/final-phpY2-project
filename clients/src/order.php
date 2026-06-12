@@ -2,6 +2,9 @@
 session_start();
 require_once __DIR__ . '/../../api/db_config.php';
 
+$isLoggedIn = isset($_SESSION['user_id']);
+$userName = $isLoggedIn ? $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'] : '';
+
 try {
     // Fetch only orders belonging to the logged-in user
     if (isset($_SESSION['user_name'])) {
@@ -128,20 +131,12 @@ try {
 
                 <!-- Actions -->
                 <div class="d-flex gap-2 align-items-center">
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <div class="dropdown">
-                            <button class="btn btn-outline-primary rounded-pill px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle me-1"></i> <?php echo htmlspecialchars($_SESSION['user_name']); ?>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2">
-                                <li><a class="dropdown-item py-2" href="index.php"><i class="bi bi-house me-2"></i>Home</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item py-2 text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
-                            </ul>
-                        </div>
+                    <?php if ($isLoggedIn): ?>
+                        <span class="text-muted me-2 small fw-semibold"><i class="bi bi-person-circle me-1"></i><?= htmlspecialchars($userName) ?></span>
+                        <button class="btn btn-outline-danger rounded-pill px-3" type="button" onclick="location.href='logout.php'">Log Out</button>
                     <?php else: ?>
-                        <button class="btn btn-outline-primary rounded-pill px-3" type="button" onclick="location.href='signup.php'">Sign Up</button>
-                        <button class="btn btn-primary rounded-pill px-3" type="button" onclick="location.href='login.php'">Sign In</button>
+                        <button class="btn btn-outline-primary rounded-pill px-3" type="button" onclick="location.href='login.php'">Sign In</button>
+                        <button class="btn btn-primary rounded-pill px-3" type="button" onclick="location.href='signup.php'">Sign Up</button>
                     <?php endif; ?>
                     <button class="btn btn-primary rounded-pill px-3 position-relative" type="button" onclick="location.href='Cart.php'">
                         <i class="bi bi-cart3 me-1"></i> Cart
@@ -194,18 +189,23 @@ try {
                                 <?php
                                 $status = strtolower($order['status'] ?? 'pending');
                                 $badgeClass = 'bg-warning text-dark';
+                                $displayStatus = $order['status'] ?? 'Pending';
                                 if ($status === 'success') {
                                     $badgeClass = 'bg-success text-white';
                                 } elseif ($status === 'shipping') {
                                     $badgeClass = 'bg-info text-white';
-                                } elseif ($status === 'cancelled') {
+                                } elseif ($status === 'cancelled' || $status === 'fail') {
                                     $badgeClass = 'bg-danger text-white';
+                                    $displayStatus = 'Cancelled';
+                                } elseif ($status === 'rendering' || $status === 'pending') {
+                                    $badgeClass = 'bg-warning text-dark';
+                                    $displayStatus = 'Pending';
                                 }
                                 ?>
                                 <span class="badge rounded-pill <?php echo $badgeClass; ?> px-3 py-2 fw-semibold text-uppercase" style="font-size: 0.75rem;">
-                                    <?php echo htmlspecialchars($order['status']); ?>
+                                    <?php echo htmlspecialchars($displayStatus); ?>
                                 </span>
-                                <?php if ($status === 'shipping' || $status === 'pending'): ?>
+                                <?php if ($status === 'shipping' || $status === 'rendering' || $status === 'pending'): ?>
                                     <button class="btn btn-sm <?php echo ($status === 'shipping') ? 'btn-primary' : 'btn-outline-secondary'; ?> rounded-pill ms-2 fw-semibold shadow-sm" style="font-size: 0.7rem;" onclick="confirmOrder(<?php echo $order['order_id']; ?>)">
                                         <i class="bi bi-check2-circle me-1"></i> Confirm Received
                                     </button>

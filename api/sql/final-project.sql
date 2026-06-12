@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: May 17, 2026 at 04:14 AM
--- Server version: 8.0.45
--- PHP Version: 8.3.30
+-- Generation Time: Jun 04, 2026 at 08:44 AM
+-- Server version: 8.0.46
+-- PHP Version: 8.3.31
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -29,32 +29,42 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `orders_tb` (
   `order_id` int NOT NULL,
-  `product_name` varchar(100) NOT NULL,
-  `product_img_src` varchar(100) DEFAULT NULL,
-  `product_price` int NOT NULL,
-  `amount_product` int NOT NULL,
-  `user_name` varchar(50) NOT NULL,
-  `status` varchar(30) DEFAULT 'Pending',
-  `bill_img_src` varchar(100) DEFAULT NULL,
+  `user_id` int NOT NULL,
+  `order_status` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `bill_img_src` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `express_address` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `express_with` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `date_order` datetime DEFAULT CURRENT_TIMESTAMP,
   `date_success` datetime DEFAULT NULL,
-  `user_address` varchar(100) DEFAULT NULL,
-  `express_with` varchar(50) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `order_items` json NOT NULL,
+  `bill_status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `orders_tb`
 --
 
-INSERT INTO `orders_tb` (`order_id`, `product_name`, `product_img_src`, `product_price`, `amount_product`, `user_name`, `status`, `bill_img_src`, `date_order`, `date_success`, `user_address`, `express_with`) VALUES
-(1, 'How to Focus', 'how to focus.jpg', 250, 1, 'Somsak Jaidee', 'Success', 'slip_01.jpg', '2026-05-15 10:30:00', '2026-05-17 14:00:00', '123/45 Bangkok', 'Kerry Express'),
-(2, 'Mindset', 'mindset.jpg', 320, 2, 'Manee Rakkarn', 'Pending', NULL, '2026-05-16 09:15:00', NULL, '99 Rama 9 Rd, Bangkok', 'Flash Express'),
-(3, 'Rich Dad Poor Dad', 'rich dad poor dad.jpg', 390, 1, 'Wichai Sooksan', 'Shipping', 'slip_02.jpg', '2026-05-16 18:45:00', NULL, '456 Nimman, Chiang Mai', 'J&T Express'),
-(4, 'Success Faster', 'success faster.jpg', 310, 1, 'Ananya Pornpan', 'Success', 'slip_03.jpg', '2026-05-14 11:00:00', '2026-05-16 09:30:00', '789 Sukhumvit, Bangkok', 'Thailand Post'),
-(5, 'The Rich Within', 'the rich within.jpg', 340, 1, 'Kitti Tangmo', 'Cancelled', NULL, '2026-05-17 13:00:00', NULL, '32/1 Phuket Rd, Phuket', 'Kerry Express'),
-(6, 'Think and Grow Rich', 'think and grow rich.jpg', 300, 3, 'John Doe', 'Success', 'slip_04.jpg', '2026-05-15 08:20:00', '2026-05-17 10:15:00', '11/2 Phaya Thai, Bangkok', 'Flash Express'),
-(7, 'Smart Money', 'smart money.jpg', 280, 1, 'Jane Smith', 'Pending', NULL, '2026-05-17 10:45:00', NULL, '55 North Rd, Chonburi', 'J&T Express'),
-(8, 'Millionaire Success Habits', 'millionaire success habits.jpg', 290, 1, 'Somchai Thai', 'Shipping', 'slip_05.jpg', '2026-05-17 11:00:00', NULL, '222 Mittraphap Rd, Khon Kaen', 'Kerry Express');
+INSERT INTO `orders_tb` (`order_id`, `user_id`, `order_status`, `bill_img_src`, `express_address`, `express_with`, `date_order`, `date_success`, `order_items`, `bill_status`) VALUES
+(1, 1, 'success', 'bill-one.jpg', 'Vientiane', 'Anousith', '2024-03-15 10:20:00', '2024-03-15 15:30:00', '[{\"id\": \"1\", \"price\": \"45\", \"amount\": \"2\", \"category\": \"how to\", \"image_src\": \"how to focus.jpg\", \"product_name\": \"How to Focus\"}, {\"id\": \"2\", \"price\": \"50\", \"amount\": \"1\", \"category\": \"mindset\", \"image_src\": \"rich dad poor dad.jpg\", \"product_name\": \"Rich Dad Poor Dad\"}]', 'success'),
+(2, 2, 'fail', 'bill-one.jpg', 'Nongpaya', 'Misai', '2024-06-12 14:15:00', NULL, '[{\"id\": \"1\", \"price\": \"65\", \"amount\": \"1\", \"category\": \"how to\", \"image_src\": \"how to launch a successful business.jpg\", \"product_name\": \"How to Launch a Successful Business\"}]', 'fail'),
+(3, 3, 'success', 'bill-one.jpg', 'nongpaya', 'misai', '2024-09-28 07:38:58', '2024-09-28 14:33:47', '[{\"id\": \"1\", \"price\": \"30\", \"amount\": \"2\", \"category\": \"how to\", \"image_src\": \"how to focus.jpg\", \"product_name\": \"how to focus\"}, {\"id\": \"2\", \"price\": \"60\", \"amount\": \"50\", \"category\": \"how to\", \"image_src\": \"how to launch a successful business.jpg\", \"product_name\": \"how to launch a successful business\"}, {\"id\": \"3\", \"price\": \"30\", \"amount\": \"5\", \"category\": \"mindset\", \"image_src\": \"rich dad poor dad.jpg\", \"product_name\": \"rich dad poor dad\"}]', 'success'),
+(4, 4, 'rendering', 'bill-one.jpg', 'Chanthabouly', 'J&T', '2024-11-05 09:00:00', NULL, '[{\"id\": \"1\", \"price\": \"55\", \"amount\": \"1\", \"category\": \"mindset\", \"image_src\": \"millionaire success habits.jpg\", \"product_name\": \"Millionaire Success Habits\"}, {\"id\": \"2\", \"price\": \"40\", \"amount\": \"2\", \"category\": \"mindset\", \"image_src\": \"mindset.jpg\", \"product_name\": \"Mindset\"}]', 'wait'),
+(5, 1, 'success', 'bill-one.jpg', 'Vientiane', 'Anousith', '2024-12-25 18:45:00', '2024-12-26 09:15:00', '[{\"id\": \"1\", \"price\": \"35\", \"amount\": \"3\", \"category\": \"history\", \"image_src\": \"smart money.jpg\", \"product_name\": \"Smart Money\"}]', 'success'),
+(6, 2, 'success', 'bill-one.jpg', 'Nongpaya', 'Misai', '2025-01-10 11:30:00', '2025-01-10 13:00:00', '[{\"id\": \"1\", \"price\": \"42\", \"amount\": \"1\", \"category\": \"story\", \"image_src\": \"success faster.jpg\", \"product_name\": \"Success Faster\"}, {\"id\": \"2\", \"price\": \"48\", \"amount\": \"1\", \"category\": \"story\", \"image_src\": \"the rich within.jpg\", \"product_name\": \"The Rich Within\"}]', 'success'),
+(7, 3, 'fail', NULL, 'nongpaya', 'misai', '2025-02-18 16:20:00', NULL, '[{\"id\": \"1\", \"price\": \"50\", \"amount\": \"2\", \"category\": \"mindset\", \"image_src\": \"think and grow rich.jpg\", \"product_name\": \"Think and Grow Rich\"}]', 'wait'),
+(8, 4, 'success', 'bill-one.jpg', 'Chanthabouly', 'Anousith', '2025-04-02 08:10:00', '2025-04-02 11:50:00', '[{\"id\": \"1\", \"price\": \"60\", \"amount\": \"1\", \"category\": \"story\", \"image_src\": \"why take a change when you have a choice.jpg\", \"product_name\": \"Why Take a Change When You Have a Choice\"}]', 'success'),
+(9, 1, 'rendering', 'bill-one.jpg', 'Vientiane', 'Misai', '2025-05-20 13:40:00', NULL, '[{\"id\": \"1\", \"price\": \"40\", \"amount\": \"1\", \"category\": \"mindset\", \"image_src\": \"mindset.jpg\", \"product_name\": \"Mindset\"}, {\"id\": \"2\", \"price\": \"35\", \"amount\": \"1\", \"category\": \"history\", \"image_src\": \"smart money.jpg\", \"product_name\": \"Smart Money\"}]', 'wait'),
+(10, 2, 'success', 'bill-one.jpg', 'Nongpaya', 'Flash', '2025-07-14 19:25:00', '2025-07-15 08:00:00', '[{\"id\": \"1\", \"price\": \"55\", \"amount\": \"4\", \"category\": \"mindset\", \"image_src\": \"millionaire success habits.jpg\", \"product_name\": \"Millionaire Success Habits\"}]', 'success'),
+(11, 3, 'success', 'bill-one.jpg', 'nongpaya', 'Anousith', '2025-09-09 10:00:00', '2025-09-09 12:30:00', '[{\"id\": \"1\", \"price\": \"50\", \"amount\": \"2\", \"category\": \"mindset\", \"image_src\": \"think and grow rich.jpg\", \"product_name\": \"Think and Grow Rich\"}]', 'success'),
+(12, 4, 'fail', 'bill-one.jpg', 'Chanthabouly', 'misai', '2025-10-31 23:11:00', NULL, '[{\"id\": \"1\", \"price\": \"30\", \"amount\": \"1\", \"category\": \"how to\", \"image_src\": \"how to focus.jpg\", \"product_name\": \"How to Focus\"}]', 'fail'),
+(13, 1, 'rendering', 'bill-one.jpg', 'Vientiane', 'J&T', '2025-12-01 15:45:00', NULL, '[{\"id\": \"1\", \"price\": \"60\", \"amount\": \"2\", \"category\": \"how to\", \"image_src\": \"how to launch a successful business.jpg\", \"product_name\": \"How to Launch a Successful Business\"}]', 'wait'),
+(14, 2, 'success', 'bill-one.jpg', 'Nongpaya', 'Misai', '2026-01-15 09:15:00', '2026-01-15 14:20:00', '[{\"id\": \"1\", \"price\": \"42\", \"amount\": \"5\", \"category\": \"story\", \"image_src\": \"success faster.jpg\", \"product_name\": \"Success Faster\"}, {\"id\": \"2\", \"price\": \"48\", \"amount\": \"2\", \"category\": \"story\", \"image_src\": \"the rich within.jpg\", \"product_name\": \"The Rich Within\"}]', 'success'),
+(15, 3, 'success', 'bill-one.jpg', 'nongpaya', 'Anousith', '2026-02-22 11:00:00', '2026-02-22 16:40:00', '[{\"id\": \"1\", \"price\": \"60\", \"amount\": \"10\", \"category\": \"story\", \"image_src\": \"why take a change when you have a choice.jpg\", \"product_name\": \"Why Take a Change When You Have a Choice\"}]', 'success'),
+(16, 4, 'success', 'bill src', 'Chanthabouly', 'J&T', '2026-03-10 13:05:00', '2026-03-04 15:09:06', '[{\"id\": \"1\", \"price\": \"30\", \"amount\": \"1\", \"category\": \"mindset\", \"image_src\": \"rich dad poor dad.jpg\", \"product_name\": \"Rich Dad Poor Dad\"}]', 'success'),
+(17, 1, 'rendering', 'bill-one.jpg', 'Vientiane', 'Flash', '2026-04-05 17:20:00', NULL, '[{\"id\": \"1\", \"price\": \"35\", \"amount\": \"3\", \"category\": \"history\", \"image_src\": \"smart money.jpg\", \"product_name\": \"Smart Money\"}]', 'wait'),
+(18, 2, 'success', 'bill-one.jpg', 'Nongpaya', 'Anousith', '2026-04-19 08:30:00', '2026-04-19 10:15:00', '[{\"id\": \"1\", \"price\": \"50\", \"amount\": \"1\", \"category\": \"mindset\", \"image_src\": \"think and grow rich.jpg\", \"product_name\": \"Think and Grow Rich\"}]', 'success'),
+(19, 3, 'success', 'bill-one.jpg', 'nongpaya', 'Misai', '2026-05-12 14:50:00', '2026-05-12 19:10:00', '[{\"id\": \"1\", \"price\": \"30\", \"amount\": \"2\", \"category\": \"how to\", \"image_src\": \"how to focus.jpg\", \"product_name\": \"How to Focus\"}, {\"id\": \"2\", \"price\": \"40\", \"amount\": \"2\", \"category\": \"mindset\", \"image_src\": \"mindset.jpg\", \"product_name\": \"Mindset\"}]', 'success'),
+(20, 4, 'rendering', 'bill-one.jpg', 'Chanthabouly', 'Anousith', '2026-06-02 10:00:00', NULL, '[{\"id\": \"1\", \"price\": \"55\", \"amount\": \"1\", \"category\": \"mindset\", \"image_src\": \"millionaire success habits.jpg\", \"product_name\": \"Millionaire Success Habits\"}]', 'wait');
 
 -- --------------------------------------------------------
 
@@ -69,24 +79,26 @@ CREATE TABLE `products_tb` (
   `category` varchar(100) DEFAULT NULL,
   `count` int DEFAULT '0',
   `image_src` varchar(255) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `sold` int NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `author` varchar(50) NOT NULL,
+  `import_date` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `products_tb`
 --
 
-INSERT INTO `products_tb` (`id`, `product_name`, `price`, `category`, `count`, `image_src`, `created_at`) VALUES
-(1, 'How to Focus', 250.00, 'Books', 10, 'how to focus.jpg', '2026-05-17 02:08:27'),
-(2, 'How to Launch a Successful Business', 350.00, 'Books', 5, 'how to launch a successful business.jpg', '2026-05-17 02:08:27'),
-(3, 'Millionaire Success Habits', 290.00, 'Books', 8, 'millionaire success habits.jpg', '2026-05-17 02:08:27'),
-(4, 'Mindset', 320.00, 'Books', 12, 'mindset.jpg', '2026-05-17 02:08:27'),
-(5, 'Rich Dad Poor Dad', 390.00, 'Books', 15, 'rich dad poor dad.jpg', '2026-05-17 02:08:27'),
-(6, 'Smart Money', 280.00, 'Books', 7, 'smart money.jpg', '2026-05-17 02:08:27'),
-(7, 'Success Faster', 310.00, 'Books', 9, 'success faster.jpg', '2026-05-17 02:08:27'),
-(8, 'The Rich Within', 340.00, 'Books', 6, 'the rich within.jpg', '2026-05-17 02:08:27'),
-(9, 'Think and Grow Rich', 300.00, 'Books', 20, 'think and grow rich.jpg', '2026-05-17 02:08:27'),
-(10, 'Why Take a Change When You Have a Choice', 330.00, 'Books', 4, 'why take a change when you have a choice.jpg', '2026-05-17 02:08:27');
+INSERT INTO `products_tb` (`id`, `product_name`, `price`, `category`, `count`, `image_src`, `sold`, `description`, `author`, `import_date`) VALUES
+(1, 'How to Focus', 250.00, 'how to', 100, 'how to focus.jpg', 98, 'this book is the best about mindset', 'anaconda', '2026-05-07'),
+(2, 'How to Launch a Successful Business', 350.00, 'Books', 0, 'how to launch a successful business.jpg', 87, 'this book give about how to success business', 'alex hormoze', '2026-05-01'),
+(3, 'Millionaire Success Habits', 290.00, 'Books', 8, 'millionaire success habits.jpg', 45, 'this book about is Millionaire Success Habits', 'Nana adum', '2026-05-06'),
+(4, 'Mindset', 320.00, 'Books', 12, 'mindset.jpg', 102, 'good mindset this book', 'vang', '2026-05-15'),
+(5, 'Rich Dad Poor Dad', 390.00, 'Books', 15, 'rich dad poor dad.jpg', 0, '', '', NULL),
+(6, 'Smart Money', 280.00, 'Books', 7, 'smart money.jpg', 0, '', '', NULL),
+(7, 'Success Faster', 310.00, 'Books', 9, 'success faster.jpg', 0, '', '', NULL),
+(8, 'The Rich Within', 340.00, 'Books', 6, 'the rich within.jpg', 0, '', '', NULL),
+(9, 'Think and Grow Rich', 300.00, 'Books', 20, 'think and grow rich.jpg', 0, '', '', NULL);
 
 -- --------------------------------------------------------
 
@@ -97,24 +109,20 @@ INSERT INTO `products_tb` (`id`, `product_name`, `price`, `category`, `count`, `
 CREATE TABLE `promotion_tb` (
   `pro_id` int NOT NULL,
   `title` varchar(100) DEFAULT NULL,
-  `status_now` varchar(50) DEFAULT NULL,
-  `type` varchar(30) DEFAULT NULL,
   `discount` int NOT NULL,
-  `create_date` datetime DEFAULT NULL,
-  `update_date` datetime DEFAULT NULL,
-  `end_date` datetime DEFAULT NULL
+  `date_order` date DEFAULT NULL,
+  `update_date` datetime DEFAULT CURRENT_TIMESTAMP,
+  `end_date` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `promotion_tb`
 --
 
-INSERT INTO `promotion_tb` (`pro_id`, `title`, `status_now`, `type`, `discount`, `create_date`, `update_date`, `end_date`) VALUES
-(1, 'Welcome Summer Sale', 'Active', 'Percentage', 20, '2024-03-01 09:00:00', '2024-03-01 09:00:00', '2024-03-31 23:59:59'),
-(2, 'Flash Sale Midnight', 'Active', 'Fixed Amount', 500, '2024-03-10 12:00:00', '2024-03-10 12:00:00', '2024-03-11 00:00:00'),
-(3, 'New User Special', 'Active', 'Percentage', 15, '2024-01-01 00:00:00', '2024-01-01 00:00:00', '2024-12-31 23:59:59'),
-(4, 'Songkran Festival Discount', 'Inactive', 'Percentage', 30, '2024-03-15 10:30:00', '2024-03-15 10:30:00', '2024-04-17 23:59:59'),
-(5, 'Clearance Stock 2023', 'Expired', 'Fixed Amount', 1000, '2023-12-01 08:00:00', '2023-12-25 15:00:00', '2023-12-31 23:59:59');
+INSERT INTO `promotion_tb` (`pro_id`, `title`, `discount`, `date_order`, `update_date`, `end_date`) VALUES
+(1, 'Lao new year', 15, '2026-05-01', '2026-06-04 15:27:27', '2026-05-15'),
+(2, 'Baby day', 30, '2026-06-01', '2026-06-04 15:28:10', '2026-06-15'),
+(3, 'Hmong new year', 20, '2027-01-01', '2026-06-04 15:29:37', '2027-01-15');
 
 -- --------------------------------------------------------
 
@@ -152,7 +160,8 @@ INSERT INTO `users_tb` (`user_id`, `Fname`, `Lname`, `gender`, `email`, `passwor
 -- Indexes for table `orders_tb`
 --
 ALTER TABLE `orders_tb`
-  ADD PRIMARY KEY (`order_id`);
+  ADD PRIMARY KEY (`order_id`),
+  ADD KEY `idx_user_id` (`user_id`);
 
 --
 -- Indexes for table `products_tb`
@@ -181,19 +190,19 @@ ALTER TABLE `users_tb`
 -- AUTO_INCREMENT for table `orders_tb`
 --
 ALTER TABLE `orders_tb`
-  MODIFY `order_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `order_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `products_tb`
 --
 ALTER TABLE `products_tb`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `promotion_tb`
 --
 ALTER TABLE `promotion_tb`
-  MODIFY `pro_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `pro_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `users_tb`

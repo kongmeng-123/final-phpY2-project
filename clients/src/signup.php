@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../api/db_config.php';
 
+// Initialize error messages
 $errors = [];
 $fname = $lname = $email = $gender = $phone = "";
 
@@ -54,18 +55,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // If no errors, insert into database
     if (empty($errors)) {
-        try {
-            // Note: In production, use password_hash(). 
-            // Following your SQL dump style (plain text for now, but I'll use hash for better practice)
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        // Securely hash the password before saving to a database
+        $hashed_password = password_hash($_POST["password"], PASSWORD_DEFAULT);
 
+        try {
             $stmt = $pdo->prepare("INSERT INTO users_tb (Fname, Lname, gender, email, password, phoneNumber) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$fname, $lname, $gender, $email, $password, $phone]); // Using $password as plain text to match your SQL dump example, change to $hashed_password if needed.
-            
-            header("Location: login.php?success=1");
+            $stmt->execute([$fname, $lname, $gender, $email, $hashed_password, $phone]);
+
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            $_SESSION['user_id'] = $pdo->lastInsertId();
+            $_SESSION['user_fname'] = $fname;
+            $_SESSION['user_lname'] = $lname;
+            $_SESSION['user_name'] = $fname . ' ' . $lname;
+
+            header("Location: order.php");
             exit();
         } catch (PDOException $e) {
-            $errors['db'] = "Registration failed: " . $e->getMessage();
+            $errors['db'] = "Database error: " . $e->getMessage();
         }
     }
 }

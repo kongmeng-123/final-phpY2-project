@@ -50,9 +50,9 @@
                 <div class="collapse" id="collapseOrder">
                     <div class="py-2 bg-white collapse-inner rounded">
                         <h6 class="collapse-header">Order detail :</h6>
-                        <a class="collapse-item" href="allOrder.php">All</a>
-                        <a class="collapse-item" href="newOrder.php">New order</a>
-                        <a class="collapse-item" href="checkOrder.php">Check order</a>
+                        <a class="collapse-item" href="checkPayment.php">Payment</a>
+                        <a class="collapse-item" href="checkOrder.php">Order status</a>
+                        <a class="collapse-item" href="orderHistory.php">History</a>
                     </div>
                 </div>
             </li>
@@ -180,20 +180,24 @@
                 <div class="container-fluid">
                     <h1 class="h3 mb-2 text-gray-800">Products Status</h1>
 
-                    <div class="py-2">
-                        <button class="btn bg-primary text-white" onclick="handleStatus('topSeller')">Top seller</button>
-                        <button class="btn bg-primary text-white" onclick="handleStatus('lowSeller')">Low seller</button>
-                        <button class="btn bg-primary text-white" onclick="handleStatus('lowStock')">Low stock</button>
-                        <button class="btn bg-primary text-white" onclick="handleStatus('OutOfStock')">Out of Stock</button>
+                    <div class="py-2 px-4 row justify-content-between">
+                        <div>
+                            <button class="btn bg-primary text-white" onclick="handleStatus('topSeller')">Top seller</button>
+                            <button class="btn bg-primary text-white" onclick="handleStatus('lowSeller')">Low seller</button>
+                            <button class="btn bg-primary text-white" onclick="handleStatus('lowStock')">Low stock</button>
+                            <button class="btn bg-primary text-white" onclick="handleStatus('OutOfStock')">Out of Stock</button>
+                        </div>
+                        <div>
+                            <input type="search" id="search_data" placeholder="Search" style="border:2px solid gray;padding: 4px;border-radius:8px; width: 230px;">
+                        </div>
+                        
                     </div>
                     <div class="shadow mb-4 card">
 
                         <div class="card-body">
                             <div class="table-responsive">
                                 <table cellspacing="0" class="table table-bordered" width="100%">
-                                    <div class="row justify-content-end p-3" >
-                                        <input type="search" id="search_data" placeholder="Search" style="border:2px solid gray;padding: 4px;border-radius:8px; width: 230px;">
-                                    </div>
+                                    
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -281,14 +285,16 @@
                 tableRow.innerHTML = `
                     <td><a href="productDetail.php?id=${item.id}" title="product detail">${item.id}</a></td>
                     <td>${item.product_name}</td>
-                    <td>${item.price}</td>
+                    <td>$ ${item.price}</td>
                     <td>${item.category}</td>
                     <td>${item.count}</td>
                     <td>${item.sold}</td>
                     <td><img src="../img/${item.image_src}" width="50" height="70"></td>
                     <td>
-                        <button class="btn bg-warning text-white">edit</button>
-                        <button class="btn btn-danger">del</button>
+                         
+                        <a href="editProduct.php?id=${item.id}" class="btn bg-warning text-white">edit</a>
+                        <button class="btn btn-danger" onclick="deleteProduct(${item.id})">del</button>
+                    
                     </td>
                 `;
                 tb_body.appendChild(tableRow);
@@ -332,6 +338,27 @@
             
           
 
+        }
+        function deleteProduct(id) {
+            if (confirm("Are you sure you want to delete this product?")) {
+                fetch(`http://localhost:9090/api/api.php/products/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error("Network response was not ok");
+                    return response.json();
+                })
+                .then(data => {
+                    alert(data.message);
+                    // หลังจากลบแล้ว ให้โหลดข้อมูลใหม่
+                    loadProduct();
+                })
+                .catch(error => {
+                    console.error("There was a problem with the delete request: ", error);
+                    alert("Failed to delete product. Please try again.");
+
+                });
+            }
         }
 
         loadProduct();

@@ -25,6 +25,34 @@
         integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
+<style>
+    #btn_success,
+    #btn_fail,
+    #btn_wait {
+        color: rgb(131, 131, 131);
+    }
+
+    #btn_success:hover {
+        color: rgb(3, 217, 3);
+
+    }
+
+    #btnc_success:active {
+        color: rgb(3, 217, 3);
+    }
+
+    #btn_fail:hover {
+        color: rgb(255, 0, 0);
+
+
+    }
+
+    #btn_wait:hover {
+        color: rgb(0, 0, 255);
+
+
+    }
+</style>
 
 <body id="page-top">
     <div id="wrapper">
@@ -56,9 +84,9 @@
                 <div class="collapse" id="collapseOrder">
                     <div class="py-2 bg-white collapse-inner rounded">
                         <h6 class="collapse-header">Order detail :</h6>
-                        <a class="collapse-item active" href="allOrder.php">All</a>
-                        <a class="collapse-item" href="newOrder.php">New order</a>
-                        <a class="collapse-item" href="checkOrder.php">Check order</a>
+                        <a class="collapse-item" href="checkPayment.php">Payment</a>
+                        <a class="collapse-item" href="checkOrder.php">Order status</a>
+                        <a class="collapse-item" href="orderHistory.php">History</a>
                     </div>
                 </div>
             </li>
@@ -297,21 +325,18 @@
                         </div>
                         <div style="font-size: 30px;" class="col align-items-center">
                             <div class="row justify-content-center">
-                                <a href="#" style="text-decoration: none;">
-                                    <i class="fa-regular fa-circle-check text-success"></i>
-                                </a>
-                                <a href="#" style="text-decoration: none;">
-                                    <i class="fa-solid fa-ban text-danger"></i>
 
-                                </a>
-                                <a href="#" style="text-decoration: none;">
-                                    <i class="fa-regular fa-circle-pause text-primary hover:bg-danger"></i>
+                                <i class="fa-regular fa-circle-check " id="btn_success" title="success"
+                                    onclick="chooseStatus('success')"></i>
+                                <i class="fa-solid fa-ban " id="btn_fail" title="fail"
+                                    onclick="chooseStatus('fail')"></i>
+                                <i class="fa-regular fa-circle-pause" id="btn_wait" title="wait"
+                                    onclick="chooseStatus('wait')"></i>
 
-                                </a>
                             </div>
                             <div>
-                                <a href="allOrder.php">
-                                    <button class="btn bg-primary w-100 text-white">OK</button>
+                                <a href="checkPayment.php">
+                                    <button class="btn bg-primary w-100 text-white" onclick="updateStatus()">OK</button>
                                 </a>
                             </div>
 
@@ -356,6 +381,125 @@
         <script src="../vendor/datatables/jquery.dataTables.min.js"></script>
         <script src="../vendor/datatables/dataTables.bootstrap4.min.js"></script>
         <script src="../js/demo/datatables-demo.js"></script>
+        <script>
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('order_id');
+            console.log("Order ID from URL:", orderId);
+
+            let allOrder = []; // เก็บข้อมูลทั้งหมดไว้ที่นี่
+
+            async function loadProduct() {
+                try {
+                    const response = await fetch('http://localhost:9090/api/api.php/orders');
+
+                    if (!response.ok) throw new Error("network response was not ok");
+
+                    allOrder = await response.json(); // เก็บข้อมูลใส่ตัวแปร Global
+                    console.log("All Orders:", allOrder); // ตรวจสอบข้อมูลที่ได้รับ
+                    randerStatus(allOrder);
+
+                } catch (error) {
+                    console.error("something wrong, " + error);
+                }
+            }
+            loadProduct();
+
+
+
+            let btn_success = document.getElementById("btn_success");
+            let btn_fail = document.getElementById("btn_fail");
+            let btn_wait = document.getElementById("btn_wait");
+            let bill_status = "";
+
+            function randerStatus(data) {
+                const currentOrder = data.find(item => item.order_id == orderId);
+
+                if (currentOrder && currentOrder.bill_status) {
+
+                    chooseStatus(currentOrder.bill_status);
+
+                }
+            }
+
+            function chooseStatus(status) {
+                console.log(status);
+                bill_status = status;
+
+                // สเต็ปที่ 1: ล้างไพ่! เปลี่ยนทุกปุ่มให้เป็นสีเทาก่อนทั้งหมด
+                btn_success.style.color = "rgb(131, 131, 131)";
+                btn_fail.style.color = "rgb(131, 131, 131)";
+                btn_wait.style.color = "rgb(131, 131, 131)";
+
+                // สเต็ปที่ 2: เจาะจงเปลี่ยนสีเฉพาะปุ่มที่ถูกเลือกเท่านั้น
+                switch (status) {
+                    case "success":
+                        btn_success.style.color = "rgb(3, 217, 3)";
+                        break;
+                    case "fail":
+                        btn_fail.style.color = "rgb(255, 0, 0)";
+                        break;
+                    case "wait":
+                        btn_wait.style.color = "rgb(0, 0, 255)";
+                        break;
+                }
+
+            }
+            // ฟังก์ชันส่งค่าไปอัปเดตที่ฝั่ง Server (API)
+            function updateStatus() {
+                // 1. ตรวจสอบก่อนว่ามีข้อมูลพร้อมส่งไหม
+                if (!orderId) {
+                    alert("ไม่พบรหัสออเดอร์ (orderId)");
+                    return;
+                }
+                if (!bill_status) {
+                    alert("กรุณาเลือกสถานะก่อนกดบันทึก");
+                    return;
+                }
+
+                // 2. กำหนด URL โดยเอา orderId ไปต่อท้ายตามโครงสร้าง API ของคุณ
+                const apiUrl = `http://localhost:9090/api/api.php/orders/${orderId}`;
+
+                // 3. เตรียม Data ที่จะส่ง (ส่งฟิลด์ "status" ให้ตรงกับ $allowedFields ใน PHP)
+                const dataToSend = {
+                    order_id: orderId, // อาจจะไม่จำเป็นต้องส่งก็ได้ถ้า URL มี orderId อยู่แล้ว ขึ้นอยู่กับการออกแบบ API ของคุณ
+                    bill_status: bill_status,
+                    order_status: bill_status ==="fail" ? "fail": "rendering" 
+                };
+
+                // 4. ยิง API ด้วย fetch() แบบสั้นและคลีน
+                fetch(apiUrl, {
+                    method: "PATCH", // หรือ "PUT" ตามที่หลังบ้านของคุณกำหนดไว้
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(dataToSend)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            // ถ้าหลังบ้านตอบกลับมาเป็น Error (เช่น 400, 404) ให้โยนข้อผิดพลาดไปที่ .catch
+                            return response.json().then(err => { throw err; });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // อัปเดตสำเร็จ!
+                        alert("update success!");
+                        console.log("Success:", data);
+
+                        // (ตัวเลือกเพิ่มเติม) คุณอาจจะสั่งให้หน้าเว็บรีเฟรชเพื่อแสดงข้อมูลล่าสุด
+                        // window.location.reload();
+                    })
+                    .catch(error => {
+                        // จัดการกรณีเกิดข้อผิดพลาด
+                        console.error("Error:", error);
+                        alert("some thing wrong: " + (error.error || "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้"));
+                    });
+            }
+
+
+
+
+        </script>
 
 </body>
 

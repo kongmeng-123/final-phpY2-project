@@ -1,10 +1,10 @@
 <?php
-session_start();
+require_once __DIR__ . '/../../src/helpers.php';
 require_once __DIR__ . '/../../api/db_config.php';
 
 $errors = [];
 $email = '';
-$successMessage = isset($_GET['success']) ? 'Registration successful! Please log in.' : '';
+$successMessage = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
@@ -19,30 +19,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         try {
-            // Check user in database
             $stmt = $pdo->prepare("SELECT * FROM users_tb WHERE email = ?");
             $stmt->execute([$email]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($user) {
-                // In your SQL dump, passwords are plain text (e.g., 'password123').
-                // Check for both plain text (as in your DB) and hashed (for newly registered users)
-                if ($password === $user['password'] || password_verify($password, $user['password'])) {
-                    // Login success
+                if (password_verify($password, $user['password']) || $password === $user['password']) {
+                    if (session_status() === PHP_SESSION_NONE) {
+                        session_start();
+                    }
                     $_SESSION['user_id'] = $user['user_id'];
+                    $_SESSION['user_fname'] = $user['Fname'];
+                    $_SESSION['user_lname'] = $user['Lname'];
                     $_SESSION['user_name'] = $user['Fname'] . ' ' . $user['Lname'];
-                    $_SESSION['user_email'] = $user['email'];
-                    
-                    header("Location: index.php");
+
+                    header("Location: order.php");
                     exit();
                 } else {
-                    $errors['auth'] = 'Invalid email or password.';
+                    $errors['password'] = 'Invalid password.';
                 }
             } else {
-                $errors['auth'] = 'Invalid email or password.';
+                $errors['email'] = 'Email not found.';
             }
         } catch (PDOException $e) {
-            $errors['auth'] = 'Login failed: ' . $e->getMessage();
+            $errors['db'] = 'Database error: ' . $e->getMessage();
         }
     }
 }
@@ -71,40 +71,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 
-<div class="login-card">
-    <div class="login-header">
-        <h2>Welcome Back</h2>
-        <p class="mb-0 opacity-75">Sign in to your account</p>
+    <div class="login-card">
+        <div class="login-header">
+            <h2>Sign In</h2>
+            <p class="mb-0 opacity-75">Enter your email and password to continue.</p>
+        </div>
+
+        <div class="login-body">
+            <?php if (isset($errors['db'])): ?>
+                <div class="alert alert-danger rounded-3 mb-4" role="alert">
+                    <?php echo $errors['db']; ?>
+                </div>
+            <?php endif; ?>
+
+            <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" class="form-control <?php echo isset($errors['email']) ? 'is-invalid' : ''; ?>" value="<?php echo htmlspecialchars($email); ?>" placeholder="john@example.com">
+                    <div class="invalid-feedback"><?php echo $errors['email'] ?? ''; ?></div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control <?php echo isset($errors['password']) ? 'is-invalid' : ''; ?>" placeholder="••••••••">
+                    <div class="invalid-feedback"><?php echo $errors['password'] ?? ''; ?></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mb-3">Sign In</button>
+                <div class="text-center text-muted small">
+                    Don't have an account? <a href="signup.php" class="text-primary fw-bold text-decoration-none">Create Account</a>
+                </div>
+            </form>
+        </div>
     </div>
-    <div class="login-body">
-        <?php if ($successMessage): ?>
-            <div class="alert alert-success rounded-3 mb-4"><?php echo $successMessage; ?></div>
-        <?php endif; ?>
-        
-        <?php if (isset($errors['auth'])): ?>
-            <div class="alert alert-danger rounded-3 mb-4"><?php echo $errors['auth']; ?></div>
-        <?php endif; ?>
-
-        <form action="login.php" method="POST">
-            <div class="mb-3">
-                <label class="form-label">Email Address</label>
-                <input type="email" name="email" class="form-control <?php echo isset($errors['email']) ? 'is-invalid' : ''; ?>" value="<?php echo htmlspecialchars($email); ?>" placeholder="john@example.com">
-                <div class="invalid-feedback"><?php echo $errors['email'] ?? ''; ?></div>
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control <?php echo isset($errors['password']) ? 'is-invalid' : ''; ?>" placeholder="••••••••">
-                <div class="invalid-feedback"><?php echo $errors['password'] ?? ''; ?></div>
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100 mb-3">Sign In</button>
-            <div class="text-center text-muted small">
-                Don't have an account? <a href="signup.php" class="text-primary fw-bold text-decoration-none">Create Account</a>
-            </div>
-        </form>
-    </div>
-</div>
 
 </body>
 </html>

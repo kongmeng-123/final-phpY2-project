@@ -15,8 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($orderId > 0) {
         try {
-            // Verify the order belongs to the user and is in 'shipping' or 'pending' status
-            $stmt = $pdo->prepare("UPDATE orders_tb SET status = ?, date_success = NOW() WHERE order_id = ? AND user_name = ? AND (status = 'Shipping' OR status = 'Pending')");
+            // Verify the order belongs to the user and is in 'shipping', 'pending', or 'rendering' status
+            $stmt = $pdo->prepare("UPDATE orders_tb SET status = ?, date_success = NOW() WHERE order_id = ? AND user_name = ? AND (LOWER(status) = 'shipping' OR LOWER(status) = 'pending' OR LOWER(status) = 'rendering')");
             $stmt->execute([$newStatus, $orderId, $_SESSION['user_name']]);
 
             if ($stmt->rowCount() > 0) {

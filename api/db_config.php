@@ -13,7 +13,7 @@ try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 } catch (PDOException $e) {
-    echo "<h1 style='color: red;'>❌ การเชื่อมต่อล้มเหลว</h1>";
+    echo "<h1 style='color: red;'>connect fail</h1>";
     echo "Error: " . $e->getMessage();
 }
 ?>

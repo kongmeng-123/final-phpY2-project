@@ -183,7 +183,7 @@
                         <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
                         <a class="btn btn-primary btn-sm d-none d-sm-inline-block shadow-sm" href="#" onclick="print()">
                             <i class="fas fa-sm fa-download text-white-50"></i>
-                            Generate Report
+                          Print Report
                         </a>
                     </div>
                     <div class="row">
@@ -466,7 +466,7 @@
                 data: {
                     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
                     datasets: [{
-                        label: 'ยอดขายประจำเดือน',
+                        label: 'monthly sales',
                         data: [saleData['January'], saleData['February'], saleData['March'], saleData['April'], saleData['May'], saleData['June'], saleData['July'], saleData['August'], saleData['September'], saleData['October'], saleData['November'], saleData['December']], // ข้อมูลแกน Y
                         backgroundColor: ['red', 'blue', 'green']
                     }]
@@ -499,7 +499,7 @@
                 data: {
                     labels: ['how to', 'mindset', 'story', 'history'],
                     datasets: [{
-                        label: 'ยอดขายประจำเดือน',
+                        label: 'monthly sales',
                         data: [categoryData['how to'], categoryData['mindset'], categoryData['story'], categoryData['history']], // ข้อมูลแกน Y
                         backgroundColor: ['red', 'blue', 'green', 'yellow']
                     }]

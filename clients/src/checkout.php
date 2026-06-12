@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once __DIR__ . '/../../api/db_config.php';
 
 $success = false;
@@ -429,7 +430,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Full Name</label>
-                            <input type="text" name="fullname" id="fullname" class="form-control rounded-3 py-2 px-3" placeholder="Enter recipient's full name" required>
+                            <input type="text" name="fullname" id="fullname" class="form-control rounded-3 py-2 px-3" placeholder="Enter recipient's full name" value="<?php echo htmlspecialchars($_SESSION['user_name'] ?? ''); ?>" required>
                         </div>
                         
                         <div class="mb-3">

@@ -3,10 +3,14 @@ session_start();
 require_once __DIR__ . '/../../api/db_config.php';
 
 try {
-    // Fetch all orders sorted by date
-    $stmt = $pdo->prepare("SELECT * FROM orders_tb ORDER BY date_order DESC, order_id DESC");
-    $stmt->execute();
-    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Fetch only orders belonging to the logged-in user
+    if (isset($_SESSION['user_name'])) {
+        $stmt = $pdo->prepare("SELECT * FROM orders_tb WHERE user_name = ? ORDER BY date_order DESC, order_id DESC");
+        $stmt->execute([$_SESSION['user_name']]);
+        $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        $orders = [];
+    }
 } catch (PDOException $e) {
     $orders = [];
     $error = $e->getMessage();
@@ -185,6 +189,7 @@ try {
                                 <span class="fw-bold font-outfit text-dark">Order #<?php echo str_pad($order['order_id'], 4, '0', STR_PAD_LEFT); ?></span>
                                 <span class="text-muted small"><i class="bi bi-clock me-1"></i><?php echo date('M d, Y h:i A', strtotime($order['date_order'])); ?></span>
                             </div>
+                            
                             <div>
                                 <?php
                                 $status = strtolower($order['status'] ?? 'pending');
@@ -200,6 +205,11 @@ try {
                                 <span class="badge rounded-pill <?php echo $badgeClass; ?> px-3 py-2 fw-semibold text-uppercase" style="font-size: 0.75rem;">
                                     <?php echo htmlspecialchars($order['status']); ?>
                                 </span>
+                                <?php if ($status === 'shipping' || $status === 'pending'): ?>
+                                    <button class="btn btn-sm <?php echo ($status === 'shipping') ? 'btn-primary' : 'btn-outline-secondary'; ?> rounded-pill ms-2 fw-semibold shadow-sm" style="font-size: 0.7rem;" onclick="confirmOrder(<?php echo $order['order_id']; ?>)">
+                                        <i class="bi bi-check2-circle me-1"></i> Confirm Received
+                                    </button>
+                                <?php endif; ?>
                             </div>
                         </div>
 
@@ -267,6 +277,29 @@ try {
             if (badge) {
                 badge.textContent = count;
                 badge.style.display = count > 0 ? 'inline-block' : 'none';
+            }
+        }
+
+        async function confirmOrder(orderId) {
+            if (confirm('Are you sure you want to confirm that you have received Order #' + orderId + '?')) {
+                try {
+                    const response = await fetch('update_order_status.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'order_id=' + orderId + '&status=Success'
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Thank you! Order #' + orderId + ' has been confirmed as received.');
+                        location.reload(); 
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Error confirming order:', error);
+                    alert('There was an error updating your order status. Please try again.');
+                }
             }
         }
 

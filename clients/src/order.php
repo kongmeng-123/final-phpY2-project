@@ -1,11 +1,19 @@
 <?php
+session_start();
 require_once __DIR__ . '/../../api/db_config.php';
 
+$isLoggedIn = isset($_SESSION['user_id']);
+$userName = $isLoggedIn ? $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'] : '';
+
 try {
-    // Fetch all orders sorted by date
-    $stmt = $pdo->prepare("SELECT * FROM orders_tb ORDER BY date_order DESC, order_id DESC");
-    $stmt->execute();
-    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Fetch only orders belonging to the logged-in user
+    if (isset($_SESSION['user_name'])) {
+        $stmt = $pdo->prepare("SELECT * FROM orders_tb WHERE user_name = ? ORDER BY date_order DESC, order_id DESC");
+        $stmt->execute([$_SESSION['user_name']]);
+        $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        $orders = [];
+    }
 } catch (PDOException $e) {
     $orders = [];
     $error = $e->getMessage();
@@ -17,7 +25,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order History - E-book Shop</title>
+    <title>Order</title>
     <!-- Bootstrap 5.3 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Google Fonts: Inter & Outfit -->
@@ -123,7 +131,13 @@ try {
 
                 <!-- Actions -->
                 <div class="d-flex gap-2 align-items-center">
-                    <button class="btn btn-outline-primary rounded-pill px-3" type="button" onclick="location.href='signup.php'">Sign Up</button>
+                    <?php if ($isLoggedIn): ?>
+                        <span class="text-muted me-2 small fw-semibold"><i class="bi bi-person-circle me-1"></i><?= htmlspecialchars($userName) ?></span>
+                        <button class="btn btn-outline-danger rounded-pill px-3" type="button" onclick="location.href='logout.php'">Log Out</button>
+                    <?php else: ?>
+                        <button class="btn btn-outline-primary rounded-pill px-3" type="button" onclick="location.href='login.php'">Sign In</button>
+                        <button class="btn btn-primary rounded-pill px-3" type="button" onclick="location.href='signup.php'">Sign Up</button>
+                    <?php endif; ?>
                     <button class="btn btn-primary rounded-pill px-3 position-relative" type="button" onclick="location.href='Cart.php'">
                         <i class="bi bi-cart3 me-1"></i> Cart
                         <span id="cart-count-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">0</span>
@@ -170,21 +184,32 @@ try {
                                 <span class="fw-bold font-outfit text-dark">Order #<?php echo str_pad($order['order_id'], 4, '0', STR_PAD_LEFT); ?></span>
                                 <span class="text-muted small"><i class="bi bi-clock me-1"></i><?php echo date('M d, Y h:i A', strtotime($order['date_order'])); ?></span>
                             </div>
+                            
                             <div>
                                 <?php
                                 $status = strtolower($order['status'] ?? 'pending');
                                 $badgeClass = 'bg-warning text-dark';
+                                $displayStatus = $order['status'] ?? 'Pending';
                                 if ($status === 'success') {
                                     $badgeClass = 'bg-success text-white';
                                 } elseif ($status === 'shipping') {
                                     $badgeClass = 'bg-info text-white';
-                                } elseif ($status === 'cancelled') {
+                                } elseif ($status === 'cancelled' || $status === 'fail') {
                                     $badgeClass = 'bg-danger text-white';
+                                    $displayStatus = 'Cancelled';
+                                } elseif ($status === 'rendering' || $status === 'pending') {
+                                    $badgeClass = 'bg-warning text-dark';
+                                    $displayStatus = 'Pending';
                                 }
                                 ?>
                                 <span class="badge rounded-pill <?php echo $badgeClass; ?> px-3 py-2 fw-semibold text-uppercase" style="font-size: 0.75rem;">
-                                    <?php echo htmlspecialchars($order['status']); ?>
+                                    <?php echo htmlspecialchars($displayStatus); ?>
                                 </span>
+                                <?php if ($status === 'shipping' || $status === 'rendering' || $status === 'pending'): ?>
+                                    <button class="btn btn-sm <?php echo ($status === 'shipping') ? 'btn-primary' : 'btn-outline-secondary'; ?> rounded-pill ms-2 fw-semibold shadow-sm" style="font-size: 0.7rem;" onclick="confirmOrder(<?php echo $order['order_id']; ?>)">
+                                        <i class="bi bi-check2-circle me-1"></i> Confirm Received
+                                    </button>
+                                <?php endif; ?>
                             </div>
                         </div>
 
@@ -252,6 +277,29 @@ try {
             if (badge) {
                 badge.textContent = count;
                 badge.style.display = count > 0 ? 'inline-block' : 'none';
+            }
+        }
+
+        async function confirmOrder(orderId) {
+            if (confirm('Are you sure you want to confirm that you have received Order #' + orderId + '?')) {
+                try {
+                    const response = await fetch('update_order_status.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'order_id=' + orderId + '&status=Success'
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Thank you! Order #' + orderId + ' has been confirmed as received.');
+                        location.reload(); 
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Error confirming order:', error);
+                    alert('There was an error updating your order status. Please try again.');
+                }
             }
         }
 

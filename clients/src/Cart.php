@@ -1,3 +1,8 @@
+<?php
+session_start();
+$isLoggedIn = isset($_SESSION['user_id']);
+$userName = $isLoggedIn ? $_SESSION['user_fname'] . ' ' . $_SESSION['user_lname'] : '';
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -61,9 +66,7 @@
  <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
             <div class="container">
                 <!-- Brand Logo -->
-                <a class="navbar-brand" href="/home">
-                    <!-- <img src="./images/gemini.jpg" alt="Logo" width="30"
-                        height="24" class="d-inline-block align-text-top me-2"> -->
+                <a class="navbar-brand fw-bold text-primary fs-3" href="index.php">
                     E-book
                 </a>
 
@@ -78,25 +81,29 @@
                 <div class="collapse navbar-collapse" id="navbarMain">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">Home</a>
+                            <a class="nav-link" href="index.php">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/product.php">Products</a>
+                            <a class="nav-link" href="Product.php">Products</a>
                         </li>
-
                         <li class="nav-item">
-                            <a class="nav-link" href="/order.php">Order</a>
+                            <a class="nav-link" href="order.php">Order</a>
                         </li>
-
                     </ul>
 
-                    <!-- Search Bar -->
-                    <form class="d-flex gap-2" role="search" action="" method="get">
-                        <input class="form-control me-2 rounded-pill" type="search" name="q" placeholder="Search..."
-                            aria-label="Search">
-                        <button class="btn btn-outline-primary btn-search" type="button" onclick="location.href='register.php'">Sign Up</button>
-                        <button class="btn btn-outline-primary btn-search" type="button" onclick="location.href='cart.php'">Cart</button>
-                    </form>
+                    <!-- Actions -->
+                    <div class="d-flex gap-2 align-items-center ms-auto">
+                        <?php if ($isLoggedIn): ?>
+                            <span class="text-muted me-2 small fw-semibold"><i class="bi bi-person-circle me-1"></i><?= htmlspecialchars($userName) ?></span>
+                            <button class="btn btn-outline-danger rounded-pill px-3" type="button" onclick="location.href='logout.php'">Log Out</button>
+                        <?php else: ?>
+                            <button class="btn btn-outline-primary rounded-pill px-3" type="button" onclick="location.href='login.php'">Sign In</button>
+                            <button class="btn btn-primary rounded-pill px-3" type="button" onclick="location.href='signup.php'">Sign Up</button>
+                        <?php endif; ?>
+                        <button class="btn btn-primary rounded-pill px-3 position-relative" type="button" onclick="location.href='cart.php'">
+                            <i class="bi bi-cart3 me-1"></i> Cart
+                        </button>
+                    </div>
                 </div>
             </div>
         </nav>

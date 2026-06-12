@@ -1,51 +1,80 @@
 <?php
+require_once __DIR__ . '/../../api/db_config.php';
+
 // Initialize error messages
 $errors = [];
-$username = $email = "";
+$fname = $lname = $email = $gender = $phone = "";
 
-// Check if form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // 1. Validate Username
-    if (empty(trim($_POST["username"]))) {
-        $errors['username'] = "Username is required.";
-    } else {
-        $username = htmlspecialchars(trim($_POST["username"]));
+    // 1. Validate First Name
+    $fname = trim($_POST["fname"] ?? '');
+    if (empty($fname)) {
+        $errors['fname'] = "First name is required.";
     }
 
-    // 2. Validate Email
-    if (empty(trim($_POST["email"]))) {
+    // 2. Validate Last Name
+    $lname = trim($_POST["lname"] ?? '');
+    if (empty($lname)) {
+        $errors['lname'] = "Last name is required.";
+    }
+
+    // 3. Validate Gender
+    $gender = $_POST["gender"] ?? '';
+    if (empty($gender)) {
+        $errors['gender'] = "Gender selection is required.";
+    }
+
+    // 4. Validate Email
+    $email = trim($_POST["email"] ?? '');
+    if (empty($email)) {
         $errors['email'] = "Email address is required.";
-    } elseif (!filter_var($_POST["email"], FILTER_VALIDATE_EMAIL)) {
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors['email'] = "Invalid email format.";
     } else {
-        $email = htmlspecialchars(trim($_POST["email"]));
+        // Check if email already exists
+        $stmt = $pdo->prepare("SELECT user_id FROM users_tb WHERE email = ?");
+        $stmt->execute([$email]);
+        if ($stmt->fetch()) {
+            $errors['email'] = "This email is already registered.";
+        }
     }
 
-    // 3. Validate Password
-    if (empty(trim($_POST["password"]))) {
+    // 5. Validate Phone
+    $phone = trim($_POST["phone"] ?? '');
+    if (empty($phone)) {
+        $errors['phone'] = "Phone number is required.";
+    }
+
+    // 6. Validate Password
+    $password = $_POST["password"] ?? '';
+    if (empty($password)) {
         $errors['password'] = "Password is required.";
-    } elseif (strlen($_POST["password"]) < 6) {
+    } elseif (strlen($password) < 6) {
         $errors['password'] = "Password must be at least 6 characters.";
     }
 
-    // If there are no validation errors, proceed to registration logic
+    // If no errors, insert into database
     if (empty($errors)) {
         // Securely hash the password before saving to a database
         $hashed_password = password_hash($_POST["password"], PASSWORD_DEFAULT);
 
-        /* ===================================================================
-        PLACE YOUR DATABASE INSERTION HERE:
-        -------------------------------------------------------------------
-        $stmt = $pdo->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
-        $stmt->execute([$username, $email, $hashed_password]);
-        
-        header("Location: login.php?success=registered");
-        exit();
-        ===================================================================
-        */
-        
-        // Temporary success message for demonstration
-        $success_message = "Account created successfully!";
+        try {
+            $stmt = $pdo->prepare("INSERT INTO users_tb (Fname, Lname, gender, email, password, phoneNumber) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$fname, $lname, $gender, $email, $hashed_password, $phone]);
+
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            $_SESSION['user_id'] = $pdo->lastInsertId();
+            $_SESSION['user_fname'] = $fname;
+            $_SESSION['user_lname'] = $lname;
+            $_SESSION['user_name'] = $fname . ' ' . $lname;
+
+            header("Location: order.php");
+            exit();
+        } catch (PDOException $e) {
+            $errors['db'] = "Database error: " . $e->getMessage();
+        }
     }
 }
 ?>
@@ -55,54 +84,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Account</title>
+    <title>Sign Up</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #f3f4f6;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .register-card {
-            background: #ffffff;
-            border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            max-width: 480px;
-            width: 100%;
-        }
-        .form-control {
-            border-radius: 12px;
-            padding: 12px 16px;
-            border: 1px solid #dee2e6;
-        }
-        .form-control:focus {
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-            border-color: #6366f1;
-        }
-        .btn-primary {
-            background-color: #6366f1;
-            border: none;
-        }
-        .btn-primary:hover {
-            background-color: #4f46e5;
-        }
-        .is-invalid {
-            border-color: #dc3545 !important;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .signup-card { background: white; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); width: 100%; max-width: 550px; overflow: hidden; }
+        .signup-header { background: #6366f1; color: white; padding: 40px 30px; text-align: center; }
+        .signup-header h2 { font-family: 'Outfit', sans-serif; margin-bottom: 5px; }
+        .signup-body { padding: 40px 30px; }
+        .form-label { font-weight: 600; font-size: 0.85rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-control, .form-select { border-radius: 12px; padding: 12px; border: 1px solid #e2e8f0; }
+        .form-control:focus { box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); border-color: #6366f1; }
+        .btn-primary { background: #6366f1; border: none; border-radius: 12px; padding: 14px; font-weight: 700; transition: all 0.2s; }
+        .btn-primary:hover { background: #4f46e5; transform: translateY(-1px); }
     </style>
 </head>
 <body>
 
-<div class="register-card p-4 p-md-5 m-3">
-    
-    <div class="text-center mb-4">
-        <h2 class="fw-bold mb-1">Get Started</h2>
-        <p class="text-muted small">Create your free account in seconds</p>
+<div class="signup-card">
+    <div class="signup-header">
+        <h2>Create Account</h2>
+        <p class="mb-0 opacity-75">Join our community of book lovers</p>
     </div>
+    <div class="signup-body">
+        <?php if (isset($errors['db'])): ?>
+            <div class="alert alert-danger rounded-3 mb-4"><?php echo $errors['db']; ?></div>
+        <?php endif; ?>
 
+<<<<<<< HEAD
     <?php if (!empty($errors)): ?>
         <div class="alert alert-danger d-flex align-items-center rounded-4 mb-4 small" role="alert">
             <i class="bi bi-exclamation-circle-fill me-2"></i>
@@ -141,10 +151,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <?php if (isset($errors['email'])): ?>
                 <div class="invalid-feedback small text-uppercase fw-semibold mt-1">
                     <?php echo $errors['email']; ?>
+=======
+        <form action="signup.php" method="POST">
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">First Name</label>
+                    <input type="text" name="fname" class="form-control <?php echo isset($errors['fname']) ? 'is-invalid' : ''; ?>" value="<?php echo htmlspecialchars($fname); ?>" placeholder="John">
+                    <div class="invalid-feedback"><?php echo $errors['fname'] ?? ''; ?></div>
                 </div>
-            <?php endif; ?>
-        </div>
+                <div class="col-md-6">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" name="lname" class="form-control <?php echo isset($errors['lname']) ? 'is-invalid' : ''; ?>" value="<?php echo htmlspecialchars($lname); ?>" placeholder="Doe">
+                    <div class="invalid-feedback"><?php echo $errors['lname'] ?? ''; ?></div>
+>>>>>>> origin/cheer_branch
+                </div>
+            </div>
 
+<<<<<<< HEAD
         <div class="mb-4">
             <label class="form-label small fw-bold text-muted tracking-wide text-uppercase mb-1">Password:</label>
             <input type="password" name="password" 
@@ -156,16 +179,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
             <?php endif; ?>
         </div>
+=======
+            <div class="mb-3">
+                <label class="form-label">Gender</label>
+                <select name="gender" class="form-select <?php echo isset($errors['gender']) ? 'is-invalid' : ''; ?>">
+                    <option value="">Select Gender</option>
+                    <option value="Male" <?php echo $gender === 'Male' ? 'selected' : ''; ?>>Male</option>
+                    <option value="Female" <?php echo $gender === 'Female' ? 'selected' : ''; ?>>Female</option>
+                    <option value="Other" <?php echo $gender === 'Other' ? 'selected' : ''; ?>>Other</option>
+                </select>
+                <div class="invalid-feedback"><?php echo $errors['gender'] ?? ''; ?></div>
+            </div>
+>>>>>>> origin/cheer_branch
 
-        <button type="submit" class="btn btn-primary w-100 py-3 rounded-4 fw-bold shadow-sm mb-3">
-            Create Account
-        </button>
+            <div class="mb-3">
+                <label class="form-label">Email Address</label>
+                <input type="email" name="email" class="form-control <?php echo isset($errors['email']) ? 'is-invalid' : ''; ?>" value="<?php echo htmlspecialchars($email); ?>" placeholder="john@example.com">
+                <div class="invalid-feedback"><?php echo $errors['email'] ?? ''; ?></div>
+            </div>
 
-        <div class="text-center">
-            <p class="mb-0 small text-muted">Already have an account? <a href="login.php" class="text-decoration-none fw-semibold text-primary">Sign In</a></p>
-        </div>
+            <div class="mb-3">
+                <label class="form-label">Phone Number</label>
+                <input type="text" name="phone" class="form-control <?php echo isset($errors['phone']) ? 'is-invalid' : ''; ?>" value="<?php echo htmlspecialchars($phone); ?>" placeholder="020-XXXX-XXXX">
+                <div class="invalid-feedback"><?php echo $errors['phone'] ?? ''; ?></div>
+            </div>
 
-    </form>
+            <div class="mb-4">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control <?php echo isset($errors['password']) ? 'is-invalid' : ''; ?>" placeholder="••••••••">
+                <div class="invalid-feedback"><?php echo $errors['password'] ?? ''; ?></div>
+                <div class="form-text mt-1">At least 6 characters required.</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mb-3">Register Now</button>
+            <div class="text-center text-muted small">
+                Already have an account? <a href="login.php" class="text-primary fw-bold text-decoration-none">Sign In</a>
+            </div>
+        </form>
+    </div>
 </div>
 
 </body>

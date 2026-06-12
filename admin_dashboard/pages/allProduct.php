@@ -8,7 +8,7 @@
     <meta content="width=device-width,initial-scale=1,shrink-to-fit=no" name="viewport" />
     <meta content="" name="description" />
     <meta content="" name="author" />
-    <title>SB Admin 2 - Tables</title>
+    <title>SB Admin</title>
     <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" />
     <link
         href="http://sfonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
@@ -29,7 +29,7 @@
                     <i class="fas fa-laugh-wink"></i>
                 </div>
                 <div class="mx-3 sidebar-brand-text">
-                    G-Book
+                    E-book
                     <sup>2</sup>
                 </div>
             </a>
@@ -51,9 +51,9 @@
                 <div class="collapse" id="collapseOrder">
                     <div class="py-2 bg-white collapse-inner rounded">
                         <h6 class="collapse-header">Order detail :</h6>
-                        <a class="collapse-item" href="..allOrder.php">All</a>
-                        <a class="collapse-item" href="newOrder.php">New order</a>
-                        <a class="collapse-item" href="checkOrder.php">Check order</a>
+                        <a class="collapse-item" href="checkPayment.php">Payment</a>
+                        <a class="collapse-item" href="checkOrder.php">Order status</a>
+                        <a class="collapse-item" href="orderHistory.php">History</a>
                     </div>
                 </div>
             </li>
@@ -129,7 +129,7 @@
                             </div>
                         </div>
                     </form>
-                    <ul class="navbar-nav ml-auto">
+                     <ul class="navbar-nav ml-auto">
                         <li class="nav-item dropdown no-arrow d-sm-none">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="searchDropdown" role="button">
@@ -155,153 +155,52 @@
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="alertsDropdown" role="button">
                                 <i class="fas fa-fw fa-bell"></i>
-                                <span class="badge badge-counter badge-danger">3+</span>
+                                <span class="badge badge-counter badge-danger">0</span>
                             </a>
-                            <div class="shadow animated--grow-in dropdown-menu dropdown-menu-right dropdown-list"
-                                aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">Alerts Center</h6>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas text-white fa-file-alt"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 12, 2019</div>
-                                        <span class="font-weight-bold">A new monthly report is ready to download!</span>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3">
-                                        <div class="bg-success icon-circle">
-                                            <i class="fas text-white fa-donate"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 7, 2019</div>
-                                        $290.29 has been deposited into your account!
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-warning">
-                                            <i class="fas text-white fa-exclamation-triangle"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 2, 2019</div>
-                                        Spending Alert: We've noticed unusually high spending for your account.
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item small text-center text-gray-500">Show All Alerts</a>
-                            </div>
+                            
                         </li>
                         <li class="nav-item dropdown no-arrow mx-1">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="messagesDropdown" role="button">
                                 <i class="fas fa-fw fa-envelope"></i>
-                                <span class="badge badge-counter badge-danger">7</span>
+                                <span class="badge badge-counter badge-danger">0</span>
                             </a>
-                            <div class="shadow animated--grow-in dropdown-menu dropdown-menu-right dropdown-list"
-                                aria-labelledby="messagesDropdown">
-                                <h6 class="dropdown-header">Message Center</h6>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="img/undraw_profile_1.svg" alt="..." />
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div class="font-weight-bold">
-                                        <div class="text-truncate">Hi there! I am wondering if you can help me with a
-                                            problem I've been having.</div>
-                                        <div class="small text-gray-500">Emily Fowler · 58m</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="img/undraw_profile_2.svg" alt="..." />
-                                        <div class="status-indicator"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">I have the photos that you ordered last month, how
-                                            would you like them sent to you?</div>
-                                        <div class="small text-gray-500">Jae Chun · 1d</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="img/undraw_profile_3.svg" alt="..." />
-                                        <div class="status-indicator bg-warning"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">Last month's report looks great, I am very happy with
-                                            the progress so far, keep up the good work!</div>
-                                        <div class="small text-gray-500">Morgan Alvarez · 2d</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="http://ssource.unsplash.com/Mv9hjnEUHR4/60x60"
-                                            alt="..." />
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">Am I a good boy? The reason I ask is because someone
-                                            told me that people say this to all dogs, even if they aren't good...</div>
-                                        <div class="small text-gray-500">Chicken the Dog · 2w</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item small text-center text-gray-500">Read More Messages</a>
-                            </div>
+                            
                         </li>
                         <div class="d-none d-sm-block topbar-divider"></div>
                         <li class="nav-item dropdown no-arrow">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="userDropdown" role="button">
                                 <span class="small d-lg-inline d-none mr-2 text-gray-600">Douglas McGee</span>
-                                <img class="rounded-circle img-profile" src="img/undraw_profile.svg" />
+                                <img class="rounded-circle img-profile" src="https://cdn-icons-png.flaticon.com/512/9703/9703596.png" />
                             </a>
-                            <div class="shadow animated--grow-in dropdown-menu dropdown-menu-right"
-                                aria-labelledby="userDropdown">
-                                <a href="#" class="dropdown-item">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-user"></i>
-                                    Profile
-                                </a>
-                                <a href="#" class="dropdown-item">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-cogs"></i>
-                                    Settings
-                                </a>
-                                <a href="#" class="dropdown-item">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-list"></i>
-                                    Activity Log
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a href="#" class="dropdown-item" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-sign-out-alt"></i>
-                                    Logout
-                                </a>
-                            </div>
+                            
                         </li>
                     </ul>
                 </nav>
                 <div class="container-fluid">
-                    <h1 class="h3 mb-2 text-gray-800">Products in store</h1>
+                    <h1 class="h3 mb-2 text-gray-800">Products in stock</h1>
                     <h3 class="h3 mb-2 text-gray-600">Category :</h3>
 
-                    <div class="py-2">
-                        <button class="btn bg-primary text-white" onclick="handleCategory('All')">All</button>
-                        <button class="btn bg-primary text-white" onclick="handleCategory('how to')">How to</button>
-                        <button class="btn bg-primary text-white" onclick="handleCategory('mindset')">Mindset</button>
-                        <button class="btn bg-primary text-white" onclick="handleCategory('story')">Story</button>
-                        <button class="btn bg-primary text-white" onclick="handleCategory('history')">History</button>
+                    <div class="py-2 px-4 row justify-content-between">
+                        <div>
+                             <button class="btn bg-primary text-white" onclick="handleCategory('All')">All</button>
+                            <button class="btn bg-primary text-white" onclick="handleCategory('how to')">How to</button>
+                            <button class="btn bg-primary text-white" onclick="handleCategory('mindset')">Mindset</button>
+                            <button class="btn bg-primary text-white" onclick="handleCategory('story')">Story</button>
+                            <button class="btn bg-primary text-white" onclick="handleCategory('history')">History</button>
+                        </div>
+                        <div>
+                            <input type="search" id="search_data" placeholder="Search" style="border:2px solid gray;padding: 4px;border-radius:8px; width: 230px;">
+                        </div>
+                       
                     </div>
                     <div class="shadow mb-4 card">
 
                         <div class="card-body">
                             <div class="table-responsive">
                                 <table cellspacing="0" class="table table-bordered" width="100%">
-                                    <div class="row justify-content-end p-3" >
-                                        <input type="search" id="search_data" placeholder="Search" style="border:2px solid gray;padding: 4px;border-radius:8px; width: 230px;">
-                                    </div>
+                                    
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -362,6 +261,7 @@
     <script src="../vendor/datatables/dataTables.bootstrap4.min.js"></script>
     <script src="../js/demo/datatables-demo.js"></script>
     <script>
+       
         
         let allProducts = []; // เก็บข้อมูลทั้งหมดไว้ที่นี่
         let categoryNow = "All";
@@ -388,13 +288,13 @@
                 tableRow.innerHTML = `
                     <td><a href="productDetail.php?id=${item.id}" title="product detail">${item.id}</a></td>
                     <td>${item.product_name}</td>
-                    <td>${item.price}</td>
+                    <td>$ ${item.price}</td>
                     <td>${item.category}</td>
                     <td>${item.count}</td>
                     <td><img src="../img/${item.image_src}" width="50" height="70"></td>
                     <td>
-                        <button class="btn bg-warning text-white">edit</button>
-                        <button class="btn btn-danger">del</button>
+                        <a href="editProduct.php?id=${item.id}" class="btn bg-warning text-white">edit</a>
+                        <button class="btn btn-danger" onclick="deleteProduct(${item.id})">del</button>
                     </td>
                 `;
                 tb_body.appendChild(tableRow);
@@ -424,7 +324,32 @@
         }
 
         loadProduct();
+        function deleteProduct(id) {
+            if (confirm("Are you sure you want to delete this product?")) {
+                fetch(`http://localhost:9090/api/api.php/products/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error("Network response was not ok");
+                    return response.json();
+                })
+                .then(data => {
+                    alert(data.message);
+                    // หลังจากลบแล้ว ให้โหลดข้อมูลใหม่
+                    loadProduct();
+                })
+                .catch(error => {
+                    console.error("There was a problem with the delete request: ", error);
+                    alert("Failed to delete product. Please try again.");
 
+                });
+            }
+        }
+        function editProduct(id) {
+            // นำไปยังหน้าการแก้ไข โดยส่ง ID ผ่าน URL
+            window.location.href = `editProduct.php?id=${id}`;
+
+        }
         
             
         

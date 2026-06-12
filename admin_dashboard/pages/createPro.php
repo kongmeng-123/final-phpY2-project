@@ -53,9 +53,9 @@
                 <div class="collapse" id="collapseOrder">
                     <div class="py-2 bg-white collapse-inner rounded">
                         <h6 class="collapse-header">Order detail :</h6>
-                        <a class="collapse-item" href="..allOrder.php">All</a>
-                        <a class="collapse-item" href="newOrder.php">New order</a>
-                        <a class="collapse-item" href="checkOrder.php">Check order</a>
+                        <a class="collapse-item" href="checkPayment.php">Payment</a>
+                        <a class="collapse-item" href="checkOrder.php">Order status</a>
+                        <a class="collapse-item" href="orderHistory.php">History</a>
                     </div>
                 </div>
             </li>
@@ -157,202 +157,57 @@
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="alertsDropdown" role="button">
                                 <i class="fas fa-fw fa-bell"></i>
-                                <span class="badge badge-counter badge-danger">3+</span>
+                                <span class="badge badge-counter badge-danger">0</span>
                             </a>
-                            <div class="shadow animated--grow-in dropdown-menu dropdown-menu-right dropdown-list"
-                                aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">Alerts Center</h6>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas text-white fa-file-alt"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 12, 2019</div>
-                                        <span class="font-weight-bold">A new monthly report is ready to download!</span>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3">
-                                        <div class="bg-success icon-circle">
-                                            <i class="fas text-white fa-donate"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 7, 2019</div>
-                                        $290.29 has been deposited into your account!
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-warning">
-                                            <i class="fas text-white fa-exclamation-triangle"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 2, 2019</div>
-                                        Spending Alert: We've noticed unusually high spending for your account.
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item small text-center text-gray-500">Show All Alerts</a>
-                            </div>
+
                         </li>
                         <li class="nav-item dropdown no-arrow mx-1">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="messagesDropdown" role="button">
                                 <i class="fas fa-fw fa-envelope"></i>
-                                <span class="badge badge-counter badge-danger">7</span>
+                                <span class="badge badge-counter badge-danger">0</span>
                             </a>
-                            <div class="shadow animated--grow-in dropdown-menu dropdown-menu-right dropdown-list"
-                                aria-labelledby="messagesDropdown">
-                                <h6 class="dropdown-header">Message Center</h6>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="img/undraw_profile_1.svg" alt="..." />
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div class="font-weight-bold">
-                                        <div class="text-truncate">Hi there! I am wondering if you can help me with a
-                                            problem I've been having.</div>
-                                        <div class="small text-gray-500">Emily Fowler · 58m</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="img/undraw_profile_2.svg" alt="..." />
-                                        <div class="status-indicator"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">I have the photos that you ordered last month, how
-                                            would you like them sent to you?</div>
-                                        <div class="small text-gray-500">Jae Chun · 1d</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="img/undraw_profile_3.svg" alt="..." />
-                                        <div class="status-indicator bg-warning"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">Last month's report looks great, I am very happy with
-                                            the progress so far, keep up the good work!</div>
-                                        <div class="small text-gray-500">Morgan Alvarez · 2d</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item align-items-center d-flex">
-                                    <div class="mr-3 dropdown-list-image">
-                                        <img class="rounded-circle" src="http://ssource.unsplash.com/Mv9hjnEUHR4/60x60"
-                                            alt="..." />
-                                        <div class="status-indicator bg-success"></div>
-                                    </div>
-                                    <div>
-                                        <div class="text-truncate">Am I a good boy? The reason I ask is because someone
-                                            told me that people say this to all dogs, even if they aren't good...</div>
-                                        <div class="small text-gray-500">Chicken the Dog · 2w</div>
-                                    </div>
-                                </a>
-                                <a href="#" class="dropdown-item small text-center text-gray-500">Read More Messages</a>
-                            </div>
+
                         </li>
                         <div class="d-none d-sm-block topbar-divider"></div>
                         <li class="nav-item dropdown no-arrow">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false"
                                 aria-haspopup="true" id="userDropdown" role="button">
                                 <span class="small d-lg-inline d-none mr-2 text-gray-600">Douglas McGee</span>
-                                <img class="rounded-circle img-profile" src="img/undraw_profile.svg" />
+                                <img class="rounded-circle img-profile"
+                                    src="https://cdn-icons-png.flaticon.com/512/9703/9703596.png" />
                             </a>
-                            <div class="shadow animated--grow-in dropdown-menu dropdown-menu-right"
-                                aria-labelledby="userDropdown">
-                                <a href="#" class="dropdown-item">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-user"></i>
-                                    Profile
-                                </a>
-                                <a href="#" class="dropdown-item">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-cogs"></i>
-                                    Settings
-                                </a>
-                                <a href="#" class="dropdown-item">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-list"></i>
-                                    Activity Log
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a href="#" class="dropdown-item" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-fw fa-sm mr-2 text-gray-400 fa-sign-out-alt"></i>
-                                    Logout
-                                </a>
-                            </div>
+
                         </li>
                     </ul>
                 </nav>
                 <div class="container-fluid">
 
                     <div class="container-fluid row justify-content-center">
-                        <form class="col " style="max-width: 700px;background-color: white;">
+                        <form class="col " style="max-width: 600px;background-color: white;">
                             <div>
-                                <div class="col py-2" style="display:flex; flex-direction:column; gap:20px">
+                                <div class="col"
+                                    style="display:flex; flex-direction:column; gap:20px; padding: 100px 20px">
                                     <div class="col-md-8">
-                                        <label class="form-label" for="inputTitle4">Title</label> <br />
-                                        <input class="form-control" type="Title" id="inputTitle4" placeholder="Title" />
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label" for="inputCategory">Status</label> <br />
-                                        <select class="form-select btn bg-white" id="inputCategory">
-                                            <option selected="selected">Active</option>
-                                            <option>wait</option>
-                                            <option>End</option>
-
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label" for="inputType">Type</label> <br />
-                                        <select class="form-select btn bg-white" id="inputType">
-                                            <option selected="selected">All</option>
-                                            <option>Category</option>
-                                            <option>Just one</option>
-
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6" style="display: none; " id="selectCategory">
-                                        <label class="form-label" for="inputCategory">Chose category</label> <br />
-                                        <select class="form-select btn bg-white" id="inputCategory">
-                                            <option selected="selected">how to</option>
-                                            <option>mindset</option>
-                                            <option>story</option>
-                                            <option>history</option>
-
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6" style="display: none;" id="selectBook">
-                                        <label class="form-label" for="inputBook">Chose book</label> <br />
-                                        <select class="form-select btn bg-white" id="inputBook">
-                                            <option selected="selected">how to</option>
-                                            <option>mindset</option>
-                                            <option>rich dad poor dad</option>
-                                            <option>how to focus</option>
-
-                                        </select>
+                                        <label class="form-label" for="title">Title</label> <br />
+                                        <input class="form-control" type="text" id="title" placeholder="Title" />
                                     </div>
 
                                     <div class="col-md-6">
-                                        <label class="form-label" for="inputAuthorName4">Discount</label>
-                                        <input class="form-control" type="AuthorName" id="inputAuthorName4"
+                                        <label class="form-label" for="discount">Discount</label>
+                                        <input class="form-control" type="number" id="discount"
                                             placeholder="Enter discount(%)" />
                                     </div>
-                                    <div class="row col-12 justify-content-between">
+                                    <div class="row col-12 justify-content-between px-10">
                                         <div>
-                                            <label class="form-label" for="inputDateImport">Date start</label>
-                                            <input class="form-control" type="date" id="inputDateImport"
+                                            <label class="form-label" for="date_order">Start</label>
+                                            <input class="form-control" type="date" id="date_order"
                                                 placeholder="xx/xx/xx" />
                                         </div>
+                                        
                                         <div>
-                                            <label class="form-label" for="inputDateImport">Date update</label>
-                                            <input class="form-control" type="date" id="inputDateImport"
-                                                placeholder="xx/xx/xx" />
-                                        </div>
-                                        <div>
-                                            <label class="form-label" for="inputDateImport">Date end</label>
-                                            <input class="form-control" type="date" id="inputDateImport"
+                                            <label class="form-label" for="end_date">End</label>
+                                            <input class="form-control" type="date" id="end_date"
                                                 placeholder="xx/xx/xx" />
                                         </div>
 
@@ -361,8 +216,10 @@
                                 </div>
 
                             </div>
-                            <div class="col-12 mt-4" style="position: relative; left: 50%; translate: -56px;">
-                                <button class="btn btn-primary" type="submit">Create Now</button>
+                            <div class="col-12 my-4" style="position: relative; left: 50%; translate: -56px;">
+                                
+                                <button class="btn btn-primary" id="submit_btn" type="button" onclick="handleSubmit()"></button>
+
                             </div>
                         </form>
                     </div>
@@ -410,20 +267,72 @@
     <script src="../vendor/datatables/dataTables.bootstrap4.min.js"></script>
     <script src="../js/demo/datatables-demo.js"></script>
     <script>
-        let proType = document.getElementById("inputType");
-        proType.addEventListener("change", (event) => {
-            if (event.target.value == "Category") {
-                document.getElementById("selectCategory").style.display = "block"
-            }
-            else if (event.target.value == "Just one") {
-                document.getElementById("selectBook").style.display = "block"
-            }
-            else {
-                document.getElementById("selectCategory").style.display = "none";
-                document.getElementById("selectBook").style.display = "none";
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('id');
+        console.log("Order ID:", orderId);
 
+        let title = document.getElementById("title");
+        let discount = document.getElementById("discount");
+        let date_order = document.getElementById("date_order");
+        let update_date = document.getElementById("update_date");
+        let end_date = document.getElementById("end_date");
+
+        document.getElementById("submit_btn").textContent = orderId ? "Update Now" : "Create Now";
+
+        if(orderId) {
+            fetch(`http://localhost:9090/api/api.php/promotions/${orderId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Promotion data:", data);
+                    title.value = data.title;
+                    discount.value = data.discount;
+                    date_order.value = data.date_order;
+                    end_date.value = data.end_date;
+                })
+                .catch(error => {
+                    console.error("Error fetching promotion:", error);
+                    alert("Failed to fetch promotion details. Please try again.");
+                });
+        }
+
+
+        async function handleSubmit() {
+            try {
+                let response = await fetch("http://localhost:9090/api/api.php/promotions", {
+                    method: orderId ? "PUT" : "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    
+                    body: JSON.stringify({
+                        id: orderId ? orderId : undefined,
+                        title: title.value,
+                        discount: discount.value,
+                        date_order: date_order.value,
+                        end_date: end_date.value
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                let data = await response.json();
+                alert("Promotion " + (orderId ? "updated" : "created") + " successfully!");
+                window.location.href = "promotion.php";
+
+            } catch (error) {
+                console.error("Error creating promotion:", error);
+                alert("Failed to create promotion. Please try again.");
             }
-        })
+        }
+
+
+
     </script>
 
 </body>

@@ -210,10 +210,12 @@
                                 <div class="col-md-4">
                                     <label class="form-label" for="Category">Category</label>
                                     <select class="form-select" id="Category">
-                                        <option selected="selected">How to</option>
-                                        <option>Story</option>
-                                        <option>History</option>
-                                        <option>Mindset</option>
+                                        <option value="how to">How to</option>
+                                        <option value="story">Story</option>
+                                        <option value="history">History</option>
+                                        <option value="mindset">Mindset</option>
+                                        <option value="books">Books</option>
+                                    </select>
                                     </select>
                                 </div>
                                 <div class="py-2 col-md-4">
@@ -237,7 +239,10 @@
                             </div>
                         </div>
                         <div class="col-12 mt-2" style="position: relative; left: 50%; translate: -56px;">
-                            <button class="btn btn-primary" type="submit" onclick="handleSubmit()">Add Now</button>
+                            <a href="allProduct.php">
+                                <button class="btn btn-primary" type="button" onclick="handleSubmit()">Update
+                                Product</button>
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -282,6 +287,37 @@
     <script src="../js/demo/chart-area-demo.js"></script>
     <script src="../js/demo/chart-pie-demo.js"></script>
     <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+        console.log("Product ID from URL:", productId);
+
+        fetch('http://localhost:9090/api/api.php/products')
+            .then(response => response.json())
+            .then(data => {
+                Allproduct = data;
+                const product = Allproduct.find(p => p.id == productId);
+                if (product) {
+                    document.getElementById("BookName").value = product.product_name;
+                    document.getElementById("AuthorName").value = product.author;
+                    document.getElementById("Price").value = product.price;
+                    document.getElementById("DateImport").value = product.import_date;
+                    document.getElementById("Count").value = product.count;
+                    document.getElementById("Description").value = product.description;
+                    document.getElementById("Category").value = product.category;
+                    if (product.image_src) {
+                        const imageUrl = `../img/${product.image_src}`;
+                        const showImage = document.getElementById("showImage");
+                        showImage.src = imageUrl;
+                        showImage.style.display = 'block';
+                        document.getElementById("image-icon").style.display = "none";
+                    }
+                } else {
+                    console.error("Product not found with ID:", productId);
+                }
+            })
+            .catch(error => console.error('Error fetching products:', error));
+
+
         const selectImage = document.getElementById("selectImage");
         const showImage = document.getElementById("showImage");
         selectImage.addEventListener('change', (event) => {
@@ -303,12 +339,25 @@
         let category = document.getElementById("Category");
         let imageSrc = document.getElementById("selectImage");
 
-        function handleSubmit() {
-            let fileName = "";
-            if (imageSrc.files[0]) {
-                fileName = imageSrc.files[0].name; // ดึงเฉพาะชื่อไฟล์ เช่น "mindset.jpg"
+        function handleSubmit(e) {
+            if (e) e.preventDefault(); // ป้องกันหน้าเว็บรีเฟรชตัวเอง
+
+            if (!productId) {
+                alert("ไม่พบรหัสสินค้า (Product ID) สำหรับทำการอัปเดต");
+                return;
             }
 
+            // 1. จัดการเรื่องรูปภาพ: 
+            // ค้นหาข้อมูลเดิมของสินค้าตัวนี้จากตาราง Allproduct ที่โหลดมาตอนแรก
+            const currentProduct = Allproduct.find(p => p.id == productId);
+            let fileName = currentProduct ? currentProduct.image_src : "";
+
+            // ถ้าผู้ใช้มีการคลิกเลือกรูปภาพใหม่ ให้เปลี่ยนไปใช้ชื่อไฟล์ใหม่
+            if (imageSrc.files[0]) {
+                fileName = imageSrc.files[0].name;
+            }
+
+            // 2. มัดรวมข้อมูลที่จะส่งไปอัปเดต
             const productData = {
                 product_name: bookName.value,
                 author: authorName.value,
@@ -317,17 +366,21 @@
                 count: count.value,
                 description: description.value,
                 category: category.value,
-                image_src: fileName // ส่งเฉพาะชื่อไฟล์ที่เป็นข้อความ (String)
+                image_src: fileName // หากไม่ได้เลือกใหม่ จะใช้ชื่อรูปเดิม ไม่โดนลบหาย
             };
-            
 
-            // 3. ยิงเฟตช์ส่งข้อมูลแบบ JSON
-            fetch('http://localhost:9090/api/api.php/products', {
-                method: 'POST',
+            console.log("ข้อมูลที่จะทำการอัปเดต:", productData);
+
+            // 3. กำหนด URL ปลายทางโดยเอา productId ต่อท้ายตามโครงสร้าง API ของคุณ
+            const updateUrl = `http://localhost:9090/api/api.php/products/${productId}`;
+
+            // 4. ยิง Fetch ด้วย Method PUT หรือ PATCH 
+            fetch(updateUrl, {
+                method: 'PUT', // หรือใช้ 'PATCH' ให้ตรงกับระบบหลังบ้านของคุณ
                 headers: {
-                    'Content-Type': 'application/json' // 🌟 ต้องระบุว่าเป็น JSON
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(productData) // แปลง Object เป็นข้อความ JSON
+                body: JSON.stringify(productData)
             })
                 .then(response => {
                     if (!response.ok) {
@@ -336,12 +389,15 @@
                     return response.json();
                 })
                 .then(data => {
-                    alert("Product added successfully!");
-                    console.log("Success:", data);
+                    alert("Product updated successfully!");
+                    console.log("Update Success:", data);
+
+                    // (Optional) ย้ายหน้ากลับไปที่หน้ารายการสินค้าหลักหลังจากบันทึกเสร็จ
+                    // window.location.href = "products_list.html";
                 })
                 .catch((error) => {
                     console.error('Error:', error);
-                    alert("Failed to add product: " + (error.error || "something went wrong"));
+                    alert(error.error);
                 });
         }
     </script>

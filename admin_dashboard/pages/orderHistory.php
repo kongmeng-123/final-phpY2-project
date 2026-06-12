@@ -7,7 +7,7 @@
     <meta content="width=device-width,initial-scale=1,shrink-to-fit=no" name="viewport" />
     <meta content="" name="description" />
     <meta content="" name="author" />
-    <title>SB Admin 2 - order</title>
+    <title>SB Admin 2 - Tables</title>
     <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" />
     <link
         href="http://sfonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
@@ -54,8 +54,8 @@
                     <div class="py-2 bg-white collapse-inner rounded">
                         <h6 class="collapse-header">Order detail :</h6>
                         <a class="collapse-item" href="checkPayment.php">Payment</a>
-                        <a class="collapse-item active" href="checkOrder.php">Order status</a>
-                        <a class="collapse-item" href="orderHistory.php">History</a>
+                        <a class="collapse-item" href="checkOrder.php">Order status</a>
+                        <a class="collapse-item active" href="orderHistory.php">History</a>
                     </div>
                 </div>
             </li>
@@ -182,18 +182,11 @@
                     </ul>
                 </nav>
                 <div class="container-fluid">
-                    <h1 class="h3 mb-2 text-gray-800">Order status</h1>
+                    <h1 class="h3 mb-2 text-gray-800">Order History</h1>
 
                     <div class="shadow mb-4 card">
                         <div class="card-header py-3 row justify-content-between align-items-center">
-                            <div>
-                                <button class="btn bg-primary text-white" onclick="handleStatus('All')">All</button>
-                                <button class="btn bg-primary text-white" onclick="handleStatus('Success')">Success</button>
-                                <button class="btn bg-primary text-white" onclick="handleStatus('Rendering')">Rendering</button>
-                                <button class="btn bg-primary text-white" onclick="handleStatus('failed')">Order
-                                    Failed</button>
-                               
-                            </div>
+                            <div></div>
                             <div>
                                 <input type="search" id="search_data" placeholder="Search"
                                 style="border:2px solid gray;padding: 4px;border-radius:8px; width: 230px;">
@@ -218,6 +211,7 @@
                                             <th>Count</th>
                                             <th>User Name</th>
                                             <th>Order Date</th>
+                                            <th>Bill</th>
                                             <th>Status</th>
 
                                         </tr>
@@ -285,14 +279,17 @@
 
                 allOrder = await response.json(); // เก็บข้อมูลใส่ตัวแปร Global
                 users = await responseU.json();
+                let orderStatus = allOrder.filter(order => {
+                    return order.order_status === "success" || order.order_status === "fail"
+                })
 
                 console.log(allOrder[0].order_items)
-                
-                renderTable(allOrder); // แสดงผลครั้งแรก
+                renderTable(orderStatus); // แสดงผลครั้งแรก
             } catch (error) {
                 console.error("something wrong, " + error);
             }
         }
+
         function handdleColor(status){
             if(status === "success") return "bg-success"
             if(status === "rendering") return "bg-warning"
@@ -343,8 +340,19 @@
                                     <td>${item.date_order}</td>
                                     
                                     <td>
+                                        <a href="checkBill.php?order_id=${item.order_id}" title="check bill" style="text-decoration: none;">
+                                            <img src="https://th.bing.com/th/id/R.ad99ef4a0f25319dfb919efb3d32174c?rik=0gCgxcbt6nkgpg&riu=http%3a%2f%2fclipartmag.com%2fimages%2fbill-clipart-6.png&ehk=xMyVVDt%2fpRyBdEJ4FJLrPdFg%2bpclrJEfX0%2bfXwWiANI%3d&risl=&pid=ImgRaw&r=0"
+                                                alt="bill" height="60" width="50">
+
+                                        </a>
+                                        <i class="fa-regular fa-circle-check ${item.bill_status == 'success' ? 'text-success' : ''}"></i>
+                                        <i class="fa-solid fa-ban ${item.bill_status == 'fail' ? 'text-danger' : ''}"></i>
+                                        <i class="fa-regular fa-circle-pause ${item.bill_status == 'wait' ? 'text-primary' : ''}"></i>
+                                    </td>
+                                     <td>
                                        <button class="btn ${handdleColor(item.order_status)} text-white" style="width:100px">${item.order_status}</button>
                                     </td>
+
                                 
                                         
                 `;
@@ -356,8 +364,6 @@
         document.getElementById("search_data").addEventListener("input", function () {
 
             let filter = this.value.toLowerCase();
-
-
             let filtered = allOrder.filter(item => {
                 let userName = users.filter(user => user.user_id === item.user_id)[0]?.Fname || "Unknown User";
                 let matchesName = userName.toLowerCase().includes(filter);
@@ -366,22 +372,24 @@
 
                 return matchesName || matchOrderId;
             });
-            renderTable(filtered);
+            let orderStatus = filtered.filter(order => {
+                    return order.order_status === "success" || order.order_status === "fail"
+            })
+            renderTable(orderStatus);
         });
 
         // 2. จัดการหมวดหมู่ (Bill)
-        function handleStatus(status = "All") {
-           
+        function handleBill(Bill) {
+            BillNow = Bill;
             // เมื่อเปลี่ยนหมวดหมู่ ให้ทำการกรองข้อมูลใหม่ทันที
             let filtered = allOrder.filter(item => {
-                if (status === "All") return true; // แสดงทั้งหมด
-                if (status === "Success") return item.order_status === "success";
-                if (status === "Rendering") return item.order_status === "rendering";
-                if (status === "failed") return item.order_status === "fail";
+                if (Bill === "All") return true;
+                if (Bill === "Payment Successful") return item.bill_status === "success";
+                if (Bill === "Payment Failed") return item.bill_status === "fail";
+                if (Bill === "New") return item.bill_status === "wait";
             });
             renderTable(filtered);
         }
-        
 
         loadProduct();
 
